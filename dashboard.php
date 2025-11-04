@@ -3,6 +3,27 @@ require_once 'includes/config.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
+// Handle product deletion
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
+    if (verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        $product_id = (int)$_POST['product_id'];
+        
+        // Verify ownership
+        $stmt = $pdo->prepare("SELECT id FROM products WHERE id = ? AND listed_by = ?");
+        $stmt->execute([$product_id, $_SESSION['user_id']]);
+        
+        if ($stmt->fetch()) {
+            // Delete the product
+            $delete_stmt = $pdo->prepare("DELETE FROM products WHERE id = ? AND listed_by = ?");
+            $delete_stmt->execute([$product_id, $_SESSION['user_id']]);
+            
+            // Redirect to prevent resubmission
+            header('Location: dashboard.php?deleted=1');
+            exit;
+        }
+    }
+}
+
 // Fetch products with owner username
 $stmt = $pdo->query("SELECT p.*, u.username, u.full_name FROM products p LEFT JOIN users u ON u.id = p.listed_by ORDER BY p.created_at DESC");
 $products = $stmt->fetchAll();

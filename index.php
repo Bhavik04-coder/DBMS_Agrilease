@@ -44,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     <?php if (isset($_SESSION['registration_success'])): ?>
       <div class="success-message">Registration successful. Please log in.</div>
       <?php unset($_SESSION['registration_success']); endif; ?>
+    <?php if (isset($_GET['logged_out'])): ?>
+      <div class="success-message">You have been logged out successfully.</div>
+    <?php endif; ?>
     <form method="post">
       <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
       <div class="form-group">

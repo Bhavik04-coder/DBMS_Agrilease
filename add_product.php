@@ -108,12 +108,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-grid">
           <div class="form-group">
             <label for="lat" class="form-label">Latitude</label>
-            <input id="lat" name="lat" class="form-input" placeholder="e.g., 28.6139">
+            <div class="location-input-wrapper">
+              <input id="lat" name="lat" class="form-input" placeholder="e.g., 28.6139" readonly>
+              <button type="button" id="get-location" class="location-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C13.1046 2 14 2.89543 14 4C14 5.10457 13.1046 6 12 6C10.8954 6 10 5.10457 10 4C10 2.89543 10.8954 2 12 2Z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 14C13.1046 14 14 14.8954 14 16C14 17.1046 13.1046 18 12 18C10.8954 18 10 17.1046 10 16C10 14.8954 10.8954 14 12 14Z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M6 8C7.10457 8 8 8.89543 8 10C8 11.1046 7.10457 12 6 12C4.89543 12 4 11.1046 4 10C4 8.89543 4.89543 8 6 8Z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M18 8C19.1046 8 20 8.89543 20 10C20 11.1046 19.1046 12 18 12C16.8954 12 16 11.1046 16 10C16 8.89543 16.8954 8 18 8Z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Get My Location
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label for="lng" class="form-label">Longitude</label>
-            <input id="lng" name="lng" class="form-input" placeholder="e.g., 77.2090">
+            <input id="lng" name="lng" class="form-input" placeholder="e.g., 77.2090" readonly>
           </div>
+        </div>
+
+        <div class="location-status" id="location-status" style="display: none;">
+          <div class="status-message"></div>
         </div>
 
         <div class="form-group">
@@ -358,6 +373,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   flex-shrink: 0;
 }
 
+.location-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.location-input-wrapper .form-input {
+  flex: 1;
+}
+
+.location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.location-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.location-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.location-btn svg {
+  flex-shrink: 0;
+}
+
+.location-status {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.location-status.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.location-status.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.location-status.loading {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
 @media (max-width: 768px) {
   .form-container {
     margin: 1rem;
@@ -380,7 +462,124 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   .form-title {
     font-size: 1.75rem;
   }
+  
+  .location-input-wrapper {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .location-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const getLocationBtn = document.getElementById('get-location');
+  const latInput = document.getElementById('lat');
+  const lngInput = document.getElementById('lng');
+  const locationStatus = document.getElementById('location-status');
+  const statusMessage = locationStatus.querySelector('.status-message');
+
+  function showStatus(message, type) {
+    statusMessage.textContent = message;
+    locationStatus.className = `location-status ${type}`;
+    locationStatus.style.display = 'block';
+  }
+
+  function hideStatus() {
+    locationStatus.style.display = 'none';
+  }
+
+  getLocationBtn.addEventListener('click', function() {
+    if (!navigator.geolocation) {
+      showStatus('Geolocation is not supported by this browser.', 'error');
+      return;
+    }
+
+    // Disable button and show loading
+    getLocationBtn.disabled = true;
+    getLocationBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Getting Location...
+    `;
+    showStatus('Requesting your location...', 'loading');
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
+
+        // Update input fields
+        latInput.value = latitude.toFixed(7);
+        lngInput.value = longitude.toFixed(7);
+
+        // Show success message
+        showStatus(`Location captured successfully! (Accuracy: ${Math.round(accuracy)}m)`, 'success');
+
+        // Reset button
+        getLocationBtn.disabled = false;
+        getLocationBtn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Location Captured
+        `;
+
+        // Hide status after 3 seconds
+        setTimeout(hideStatus, 3000);
+      },
+      function(error) {
+        let errorMessage = 'Unable to get your location. ';
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Location access denied by user.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out.';
+            break;
+          default:
+            errorMessage += 'An unknown error occurred.';
+            break;
+        }
+
+        showStatus(errorMessage, 'error');
+
+        // Reset button
+        getLocationBtn.disabled = false;
+        getLocationBtn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Try Again
+        `;
+      },
+      options
+    );
+  });
+
+  // Auto-get location on page load (optional)
+  // Uncomment the next line if you want to automatically request location when page loads
+  // getLocationBtn.click();
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>

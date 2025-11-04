@@ -13,9 +13,22 @@
     <a class="brand" href="dashboard.php"><span class="logo-icon">🌾</span> AgriLease</a>
     <button class="nav-toggle" aria-label="Toggle menu" onclick="document.body.classList.toggle('nav-open')">☰</button>
     <div class="nav-links">
-      <a href="dashboard.php">Home</a> <a href="notifications.php">Notifications</a> <a href="my_bookings.php">My Bookings</a>
-      <a href="add_product.php">Add Product</a>
+      <a href="dashboard.php">Dashboard</a>
+      <a href="products.php">Browse Equipment</a>
+      <a href="manage_bookings.php">Manage Bookings</a>
       <a href="my_products.php">My Products</a>
+      <a href="add_product.php">Add Product</a>
+      <a href="notifications.php">
+        Notifications
+        <?php 
+        if (isset($_SESSION['user_id'])) {
+          $unread_count = getUnreadNotificationCount($_SESSION['user_id']);
+          if ($unread_count > 0): 
+        ?>
+          <span class="notification-badge"><?php echo $unread_count; ?></span>
+        <?php endif; } ?>
+      </a>
+      <a href="profile.php">Profile</a>
       <a href="logout.php" class="btn btn-ghost">Logout</a>
       <div class="user-pill">
         <span class="user-avatar">👤</span>
