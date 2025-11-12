@@ -150,16 +150,12 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
                   </svg>
                   View Details
                 </a>
-                <form method="post" action="book.php" class="book-form">
-                  <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-                  <input type="hidden" name="product_id" value="<?php echo (int)$p['id']; ?>">
-                  <button class="btn btn-primary btn-sm" type="submit">
-                    <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
-                    </svg>
-                    Book Now
-                  </button>
-                </form>
+                <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
+                  </svg>
+                  Book Now
+                </a>
               </div>
             </div>
           </div>
@@ -197,11 +193,7 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
               <a class="btn btn-outline btn-sm" href="product_detail.php?id=<?php echo (int)$p['id']; ?>">
                 View Details
               </a>
-              <form method="post" action="book.php" class="book-form">
-                <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-                <input type="hidden" name="product_id" value="<?php echo (int)$p['id']; ?>">
-                <button class="btn btn-primary btn-sm" type="submit">Book Now</button>
-              </form>
+              <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm">Book Now</a>
             </div>
           </div>
         </div>

@@ -38,17 +38,39 @@ $stmt = $pdo->prepare("
     SELECT p.*, u.id as owner_id, u.full_name as owner_name, u.email as owner_email, u.lat as owner_lat, u.lng as owner_lng 
     FROM products p 
     LEFT JOIN users u ON u.id = p.listed_by 
-    WHERE p.id = ? AND p.status = 'available'
+    WHERE p.id = ?
 ");
 $stmt->execute([$pid]);
 $p = $stmt->fetch();
 
 if (!$p) { 
-    die('Product not found or not available.'); 
+    die('Product not found.'); 
 }
 
 if ((int)$p['listed_by'] === (int)$_SESSION['user_id']) { 
     die('You cannot book your own product.'); 
+}
+
+// Check if product is available
+if ($p['status'] !== 'available') {
+    die('This product is currently not available for booking.');
+}
+
+// Check for overlapping bookings
+$overlap_check = $pdo->prepare("
+    SELECT COUNT(*) FROM bookings 
+    WHERE product_id = ? 
+    AND status IN ('pending', 'confirmed')
+    AND (
+        (start_date <= ? AND end_date >= ?) OR
+        (start_date <= ? AND end_date >= ?) OR
+        (start_date >= ? AND end_date <= ?)
+    )
+");
+$overlap_check->execute([$pid, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date]);
+
+if ($overlap_check->fetchColumn() > 0) {
+    die('This product is already booked for the selected dates. Please choose different dates.');
 }
 
 // Calculate total price

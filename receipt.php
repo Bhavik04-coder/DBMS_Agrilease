@@ -1,17 +1,72 @@
 <?php
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
+
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$stmt = $pdo->prepare("SELECT b.*, p.title as product_title, p.image_path, p.price as daily_price, u.full_name as renter_name, u.email as renter_email, o.full_name as owner_name, o.email as owner_email FROM bookings b LEFT JOIN products p ON p.id = b.product_id LEFT JOIN users u ON u.id = b.renter_id LEFT JOIN users o ON o.id = b.owner_id WHERE b.id = ?");
+
+// Fetch booking with receipt details
+$stmt = $pdo->prepare("
+  SELECT 
+    b.*, 
+    p.title as product_title, 
+    p.image_path, 
+    p.price as daily_price,
+    p.category,
+    u.full_name as renter_name, 
+    u.email as renter_email,
+    u.phone as renter_phone,
+    u.address as renter_address,
+    o.full_name as owner_name, 
+    o.email as owner_email,
+    o.phone as owner_phone,
+    o.address as owner_address,
+    r.receipt_number,
+    r.subtotal,
+    r.tax_amount,
+    r.discount_amount,
+    r.total_amount as receipt_total,
+    r.payment_status as receipt_payment_status,
+    r.payment_date,
+    r.payment_method,
+    r.transaction_id
+  FROM bookings b 
+  LEFT JOIN products p ON p.id = b.product_id 
+  LEFT JOIN users u ON u.id = b.renter_id 
+  LEFT JOIN users o ON o.id = b.owner_id
+  LEFT JOIN receipts r ON r.booking_id = b.id
+  WHERE b.id = ?
+");
 $stmt->execute([$id]);
 $b = $stmt->fetch();
-if (!$b) die('Booking not found.');
 
-// Calculate rental period and total
+if (!$b) {
+  die('Booking not found.');
+}
+
+// Verify user has access to this receipt
+if ($b['renter_id'] != $_SESSION['user_id'] && $b['owner_id'] != $_SESSION['user_id']) {
+  die('Access denied.');
+}
+
+// Calculate rental period and pricing
 $start_date = new DateTime($b['start_date']);
 $end_date = new DateTime($b['end_date']);
 $days = $start_date->diff($end_date)->days + 1; // Include both start and end dates
-$total_price = $days * $b['daily_price'];
+
+// Use receipt amounts if available, otherwise calculate
+if ($b['receipt_total']) {
+  $subtotal = $b['subtotal'];
+  $tax_amount = $b['tax_amount'];
+  $discount = $b['discount_amount'];
+  $total_price = $b['receipt_total'];
+} else {
+  $subtotal = $days * $b['daily_price'];
+  $tax_amount = $subtotal * 0.18; // 18% GST
+  $discount = 0;
+  $total_price = $subtotal + $tax_amount - $discount;
+}
+
+$receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_LEFT);
 ?>
 <?php include 'includes/header.php'; ?>
 
@@ -50,8 +105,8 @@ $total_price = $days * $b['daily_price'];
         </div>
       </div>
       <div class="receipt-meta">
-        <div class="receipt-id">Booking #<?php echo str_pad((int)$b['id'], 6, '0', STR_PAD_LEFT); ?></div>
-        <div class="receipt-date"><?php echo date('F j, Y', strtotime($b['created_at'])); ?></div>
+        <div class="receipt-id"><?php echo htmlspecialchars($receipt_number); ?></div>
+        <div class="receipt-date">Issue Date: <?php echo date('F j, Y', strtotime($b['created_at'])); ?></div>
         <div class="status-badge status-<?php echo htmlspecialchars($b['status']); ?>">
           <?php echo htmlspecialchars(ucfirst($b['status'])); ?>
         </div>
@@ -144,13 +199,43 @@ $total_price = $days * $b['daily_price'];
         <h3 class="section-title">Payment Summary</h3>
         <div class="pricing-breakdown">
           <div class="price-row">
-            <div class="price-label">Daily Rate × <?php echo $days; ?> days</div>
-            <div class="price-amount">₹<?php echo number_format((float)$b['daily_price'], 2); ?></div>
+            <div class="price-label">Daily Rate (₹<?php echo number_format((float)$b['daily_price'], 2); ?>) × <?php echo $days; ?> day<?php echo $days > 1 ? 's' : ''; ?></div>
+            <div class="price-amount">₹<?php echo number_format($subtotal, 2); ?></div>
           </div>
+          <div class="price-row">
+            <div class="price-label">GST (18%)</div>
+            <div class="price-amount">₹<?php echo number_format($tax_amount, 2); ?></div>
+          </div>
+          <?php if ($discount > 0): ?>
+          <div class="price-row discount">
+            <div class="price-label">Discount</div>
+            <div class="price-amount">-₹<?php echo number_format($discount, 2); ?></div>
+          </div>
+          <?php endif; ?>
           <div class="price-row total">
             <div class="price-label">Total Amount</div>
             <div class="price-amount">₹<?php echo number_format($total_price, 2); ?></div>
           </div>
+          <?php if ($b['payment_status'] || $b['receipt_payment_status']): ?>
+          <div class="price-row payment-status">
+            <div class="price-label">Payment Status</div>
+            <div class="price-amount status-<?php echo $b['receipt_payment_status'] ?: $b['payment_status']; ?>">
+              <?php echo ucfirst($b['receipt_payment_status'] ?: $b['payment_status']); ?>
+            </div>
+          </div>
+          <?php endif; ?>
+          <?php if ($b['payment_method']): ?>
+          <div class="price-row">
+            <div class="price-label">Payment Method</div>
+            <div class="price-amount"><?php echo htmlspecialchars($b['payment_method']); ?></div>
+          </div>
+          <?php endif; ?>
+          <?php if ($b['transaction_id']): ?>
+          <div class="price-row">
+            <div class="price-label">Transaction ID</div>
+            <div class="price-amount"><?php echo htmlspecialchars($b['transaction_id']); ?></div>
+          </div>
+          <?php endif; ?>
         </div>
       </div>
 
@@ -520,6 +605,28 @@ $total_price = $days * $b['daily_price'];
 
 .price-row.total .price-amount {
   font-size: 1.1rem;
+}
+
+.price-row.discount .price-amount {
+  color: #10b981;
+}
+
+.price-row.payment-status .price-amount {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.price-row.payment-status .status-paid {
+  color: #10b981;
+}
+
+.price-row.payment-status .status-pending {
+  color: #f59e0b;
+}
+
+.price-row.payment-status .status-refunded {
+  color: #6b7280;
 }
 
 /* Map Section */
