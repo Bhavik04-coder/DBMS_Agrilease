@@ -10,7 +10,7 @@ if (!$booking_id) {
     exit;
 }
 
-// Fetch complete booking details with receipt
+
 $stmt = $pdo->prepare("
     SELECT 
         b.*,
@@ -51,12 +51,12 @@ if (!$booking) {
     exit;
 }
 
-// Verify user has access
+
 if ($booking['renter_id'] != $_SESSION['user_id'] && $booking['owner_id'] != $_SESSION['user_id']) {
     die('Access denied.');
 }
 
-// Calculate duration
+
 $start_date = new DateTime($booking['start_date']);
 $end_date = new DateTime($booking['end_date']);
 $duration = $start_date->diff($end_date)->days + 1;

@@ -16,23 +16,23 @@ function handleFileUpload($file) {
         return ['success' => false, 'message' => 'File upload error'];
     }
 
-    // Validate file size
+
     if ($file['size'] > MAX_FILE_SIZE) {
         return ['success' => false, 'message' => 'File is too large'];
     }
 
-    // Validate file type
+
     $file_type = mime_content_type($file['tmp_name']);
     if (!in_array($file_type, ALLOWED_FILE_TYPES)) {
         return ['success' => false, 'message' => 'Invalid file type'];
     }
 
-    // Create upload directory if it doesn't exist
+
     if (!is_dir(UPLOAD_DIR)) {
         mkdir(UPLOAD_DIR, 0777, true);
     }
 
-    // Generate unique filename
+
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = uniqid() . '.' . $extension;
     $destination = UPLOAD_DIR . $filename;

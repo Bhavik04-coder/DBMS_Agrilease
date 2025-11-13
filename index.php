@@ -2,7 +2,7 @@
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
 
-// If already logged in, go to dashboard
+
 if (!empty($_SESSION['user_id'])) {
     header('Location: dashboard.php'); exit;
 }

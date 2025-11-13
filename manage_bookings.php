@@ -6,14 +6,14 @@ require_once 'includes/functions.php';
 $error = '';
 $success = '';
 
-// Handle renter cancellation
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid session. Please refresh and try again.';
     } else {
         $booking_id = (int)$_POST['booking_id'];
         
-        // Get booking details - verify renter owns this booking
+
         $stmt = $pdo->prepare("
             SELECT b.*, p.title as product_title, u.full_name as owner_name 
             FROM bookings b 
@@ -31,15 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
         } elseif ($booking['status'] === 'cancelled') {
             $error = 'This booking is already cancelled.';
         } else {
-            // Update booking status to cancelled
+
             $update_stmt = $pdo->prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ? AND renter_id = ?");
             $update_stmt->execute([$booking_id, $_SESSION['user_id']]);
             
-            // Make product available again
+
             $pdo->prepare("UPDATE products SET status = 'available', availability = 'Available' WHERE id = ?")
                 ->execute([$booking['product_id']]);
             
-            // Send notification to owner
+
             sendNotification($booking['owner_id'], 'Booking Cancelled', "The booking for '{$booking['product_title']}' has been cancelled by the renter.", 'booking');
             
             $success = 'Booking cancelled successfully. The product is now available for others to book.';
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
     }
 }
 
-// Handle booking status updates (Owner actions)
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid session. Please refresh and try again.';
@@ -55,12 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
         $booking_id = (int)$_POST['booking_id'];
         $new_status = $_POST['status'];
         
-        // Validate status
+
         $valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled'];
         if (!in_array($new_status, $valid_statuses)) {
             $error = 'Invalid status.';
         } else {
-            // Get booking details
+
             $stmt = $pdo->prepare("
                 SELECT b.*, p.title as product_title, u.full_name as renter_name 
                 FROM bookings b 
@@ -74,11 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
             if (!$booking) {
                 $error = 'Booking not found.';
             } else {
-                // Update booking status
+
                 $update_stmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ? AND owner_id = ?");
                 $update_stmt->execute([$new_status, $booking_id, $_SESSION['user_id']]);
                 
-                // Update product status based on booking status
+
                 if ($new_status === 'confirmed') {
                     $pdo->prepare("UPDATE products SET status = 'booked', availability = 'Rented' WHERE id = ?")
                         ->execute([$booking['product_id']]);
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
                         ->execute([$booking['product_id']]);
                 }
                 
-                // Send notification to renter
+
                 $status_messages = [
                     'confirmed' => "Your booking for '{$booking['product_title']}' has been confirmed!",
                     'completed' => "Your booking for '{$booking['product_title']}' has been marked as completed.",
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
                     sendNotification($booking['renter_id'], 'Booking Status Update', $status_messages[$new_status], 'booking');
                 }
                 
-                // Redirect to confirmation details page if confirmed
+
                 if ($new_status === 'confirmed') {
                     $_SESSION['booking_confirmed'] = $booking_id;
                     header('Location: booking_confirmed.php?id=' . $booking_id);
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
     }
 }
 
-// Get bookings received by the user (as owner)
+
 $received_stmt = $pdo->prepare("
     SELECT b.*, p.title as product_title, p.image_path, u.full_name as renter_name, u.email as renter_email, u.phone as renter_phone
     FROM bookings b 
@@ -123,7 +123,7 @@ $received_stmt = $pdo->prepare("
 $received_stmt->execute([$_SESSION['user_id']]);
 $received_bookings = $received_stmt->fetchAll();
 
-// Get bookings made by the user (as renter)
+
 $made_stmt = $pdo->prepare("
     SELECT b.*, p.title as product_title, p.image_path, u.full_name as owner_name, u.email as owner_email, u.phone as owner_phone
     FROM bookings b 
@@ -742,20 +742,20 @@ $made_bookings = $made_stmt->fetchAll();
 
 <script>
 function showTab(tabName) {
-  // Hide all tabs
+
   document.querySelectorAll('.tab-content').forEach(tab => {
     tab.classList.remove('active');
   });
   
-  // Remove active class from all buttons
+
   document.querySelectorAll('.tab-button').forEach(btn => {
     btn.classList.remove('active');
   });
   
-  // Show selected tab
+
   document.getElementById(tabName + '-tab').classList.add('active');
   
-  // Add active class to clicked button
+
   event.target.classList.add('active');
 }
 </script>

@@ -10,7 +10,7 @@ if (!$product_id) {
     exit;
 }
 
-// Fetch product details
+
 $stmt = $pdo->prepare("
     SELECT p.*, u.username, u.full_name, u.email, u.phone 
     FROM products p 
@@ -25,7 +25,7 @@ if (!$product) {
     exit;
 }
 
-// Fetch reviews for this product
+
 $reviews_stmt = $pdo->prepare("
     SELECT r.*, u.username, u.full_name 
     FROM reviews r 
@@ -36,14 +36,14 @@ $reviews_stmt = $pdo->prepare("
 $reviews_stmt->execute([$product_id]);
 $reviews = $reviews_stmt->fetchAll();
 
-// Calculate average rating
+
 $avg_rating = 0;
 if (count($reviews) > 0) {
     $total_rating = array_sum(array_column($reviews, 'rating'));
     $avg_rating = $total_rating / count($reviews);
 }
 
-// Handle review submission
+
 $review_error = '';
 $review_success = '';
 
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
         } elseif (empty($comment)) {
             $review_error = 'Please write a review comment.';
         } else {
-            // Check if user already reviewed this product
+
             $check_stmt = $pdo->prepare("SELECT id FROM reviews WHERE product_id = ? AND reviewer_id = ?");
             $check_stmt->execute([$product_id, $_SESSION['user_id']]);
             
@@ -73,11 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
                 $insert_stmt->execute([$product_id, $_SESSION['user_id'], $product['listed_by'], $rating, $comment]);
                 $review_success = 'Review submitted successfully!';
                 
-                // Refresh reviews
+
                 $reviews_stmt->execute([$product_id]);
                 $reviews = $reviews_stmt->fetchAll();
                 
-                // Recalculate average
+
                 if (count($reviews) > 0) {
                     $total_rating = array_sum(array_column($reviews, 'rating'));
                     $avg_rating = $total_rating / count($reviews);
@@ -278,7 +278,7 @@ $is_owner = (int)$product['listed_by'] === (int)$_SESSION['user_id'];
               const start = new Date(startDate);
               const end = new Date(endDate);
               const diffTime = Math.abs(end - start);
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both days
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
               
               if (diffDays > 0) {
                 const total = diffDays * pricePerDay;

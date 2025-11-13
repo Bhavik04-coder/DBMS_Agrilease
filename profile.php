@@ -18,13 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lat = is_numeric($_POST['lat'] ?? null) ? (float)$_POST['lat'] : null;
         $lng = is_numeric($_POST['lng'] ?? null) ? (float)$_POST['lng'] : null;
 
-        // Validate inputs
+
         if ($email && !validateEmail($email)) {
             $error = 'Invalid email address.';
         } elseif ($phone && !validatePhone($phone)) {
             $error = 'Phone number must be 10-15 digits.';
         } else {
-            // Handle profile image upload
+
             $profile_image = $user['profile_image'];
             if (!empty($_FILES['profile_image']['name'])) {
                 $upload_result = handleFileUpload($_FILES['profile_image']);
@@ -44,14 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$full_name, $email, $phone, $address, $lat, $lng, $profile_image, $_SESSION['user_id']]);
                 $success = 'Profile updated successfully.';
                 
-                // Refresh user data
+
                 $user = getCurrentUser();
             }
         }
     }
 }
 
-// Handle password change
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid session. Please refresh and try again.';
@@ -264,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 
         <div class="stats-grid">
           <?php
-          // Get user statistics
+
           $products_stmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE listed_by = ?");
           $products_stmt->execute([$_SESSION['user_id']]);
           $products_count = $products_stmt->fetchColumn();
@@ -738,7 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Disable button and show loading
+
     getLocationBtn.disabled = true;
     getLocationBtn.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -761,14 +761,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const longitude = position.coords.longitude;
         const accuracy = position.coords.accuracy;
 
-        // Update input fields
+
         latInput.value = latitude.toFixed(7);
         lngInput.value = longitude.toFixed(7);
 
-        // Show success message
+
         showStatus(`Location captured successfully! (Accuracy: ${Math.round(accuracy)}m)`, 'success');
 
-        // Reset button
+
         getLocationBtn.disabled = false;
         getLocationBtn.innerHTML = `
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -778,7 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
           Location Updated
         `;
 
-        // Hide status after 3 seconds
+
         setTimeout(hideStatus, 3000);
       },
       function(error) {
@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         showStatus(errorMessage, 'error');
 
-        // Reset button
+
         getLocationBtn.disabled = false;
         getLocationBtn.innerHTML = `
           <svg width="16" height="16" viewBox="0 0="24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

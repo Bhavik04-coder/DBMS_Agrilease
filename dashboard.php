@@ -3,37 +3,37 @@ require_once 'includes/config.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
-// Handle product deletion
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
     if (verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $product_id = (int)$_POST['product_id'];
         
-        // Verify ownership
+
         $stmt = $pdo->prepare("SELECT id FROM products WHERE id = ? AND listed_by = ?");
         $stmt->execute([$product_id, $_SESSION['user_id']]);
         
         if ($stmt->fetch()) {
-            // Delete the product
+
             $delete_stmt = $pdo->prepare("DELETE FROM products WHERE id = ? AND listed_by = ?");
             $delete_stmt->execute([$product_id, $_SESSION['user_id']]);
             
-            // Redirect to prevent resubmission
+
             header('Location: dashboard.php?deleted=1');
             exit;
         }
     }
 }
 
-// Fetch products with owner username
+
 $stmt = $pdo->query("SELECT p.*, u.username, u.full_name FROM products p LEFT JOIN users u ON u.id = p.listed_by ORDER BY p.created_at DESC");
 $products = $stmt->fetchAll();
 
-// Fetch bookings involving user
+
 $stmt = $pdo->prepare("SELECT b.*, p.title as product_title FROM bookings b LEFT JOIN products p ON p.id = b.product_id WHERE b.renter_id = ? OR b.owner_id = ? ORDER BY b.created_at DESC");
 $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
 $bookings = $stmt->fetchAll();
 
-// Separate user's own products and other products
+
 $myProducts = [];
 $otherProducts = [];
 foreach ($products as $p) {
@@ -44,7 +44,7 @@ foreach ($products as $p) {
     }
 }
 
-// Separate bookings by type
+
 $receivedBookings = [];
 foreach ($bookings as $b) {
     if ((int)$b['renter_id'] !== (int)($_SESSION['user_id'] ?? 0)) {

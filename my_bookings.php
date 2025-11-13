@@ -1,6 +1,52 @@
 <?php
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
+require_once 'includes/functions.php';
+
+$error = '';
+$success = '';
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        $error = 'Invalid session. Please refresh and try again.';
+    } else {
+        $booking_id = (int)$_POST['booking_id'];
+        
+
+        $stmt = $pdo->prepare("
+            SELECT b.*, p.title as product_title, u.full_name as owner_name 
+            FROM bookings b 
+            LEFT JOIN products p ON p.id = b.product_id 
+            LEFT JOIN users u ON u.id = b.owner_id 
+            WHERE b.id = ? AND b.renter_id = ?
+        ");
+        $stmt->execute([$booking_id, $_SESSION['user_id']]);
+        $booking = $stmt->fetch();
+        
+        if (!$booking) {
+            $error = 'Booking not found or you do not have permission to cancel it.';
+        } elseif ($booking['status'] === 'completed') {
+            $error = 'Cannot cancel a completed booking.';
+        } elseif ($booking['status'] === 'cancelled') {
+            $error = 'This booking is already cancelled.';
+        } else {
+
+            $update_stmt = $pdo->prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ? AND renter_id = ?");
+            $update_stmt->execute([$booking_id, $_SESSION['user_id']]);
+            
+
+            $pdo->prepare("UPDATE products SET status = 'available', availability = 'Available' WHERE id = ?")
+                ->execute([$booking['product_id']]);
+            
+
+            sendNotification($booking['owner_id'], 'Booking Cancelled', "The booking for '{$booking['product_title']}' has been cancelled by the renter.", 'booking');
+            
+            $success = 'Booking cancelled successfully. The product is now available for others to book.';
+        }
+    }
+}
+
 $stmt = $pdo->prepare("SELECT b.*, p.title as product_title, p.image_path FROM bookings b LEFT JOIN products p ON p.id = b.product_id WHERE b.renter_id = ? ORDER BY b.created_at DESC");
 $stmt->execute([$_SESSION['user_id']]);
 $bookings = $stmt->fetchAll();
@@ -16,6 +62,24 @@ $bookings = $stmt->fetchAll();
       </div>
     </div>
   </div>
+
+  <?php if ($error): ?>
+    <div class="alert alert-error">
+      <svg class="alert-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+      </svg>
+      <?php echo $error; ?>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($success): ?>
+    <div class="alert alert-success">
+      <svg class="alert-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.47a.75.75 0 00-1.06 1.06l2 2a.75.75 0 001.154-.114l4-5.5z" clip-rule="evenodd" />
+      </svg>
+      <?php echo $success; ?>
+    </div>
+  <?php endif; ?>
 
   <?php if (!$bookings): ?>
     <div class="empty-state">
@@ -105,13 +169,18 @@ $bookings = $stmt->fetchAll();
                 View Receipt
               </a>
               
-              <?php if ($b['status'] === 'pending'): ?>
-                <button class="btn btn-outline btn-with-icon" onclick="cancelBooking(<?php echo (int)$b['id']; ?>)">
-                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                  </svg>
-                  Cancel
-                </button>
+              <?php if (in_array($b['status'], ['pending', 'confirmed'])): ?>
+                <form method="post" style="display: inline;">
+                  <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
+                  <input type="hidden" name="cancel_booking" value="1">
+                  <input type="hidden" name="booking_id" value="<?php echo (int)$b['id']; ?>">
+                  <button type="submit" class="btn btn-danger btn-with-icon" onclick="return confirm('Are you sure you want to cancel this booking?\n\nThis will:\n- Cancel your booking\n- Make the product available again\n- Notify the owner\n\nThis action cannot be undone.')">
+                    <svg class="btn-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    Cancel Booking
+                  </button>
+                </form>
               <?php endif; ?>
             </div>
           </div>
@@ -121,16 +190,35 @@ $bookings = $stmt->fetchAll();
   <?php endif; ?>
 </div>
 
-<script>
-function cancelBooking(bookingId) {
-  if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-    // You can implement cancellation logic here
-    alert('Cancellation feature to be implemented');
-  }
-}
-</script>
+
 
 <style>
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.alert-error {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.alert-icon {
+  flex-shrink: 0;
+}
+
 .page-header {
   margin-bottom: 2rem;
 }
@@ -364,6 +452,18 @@ function cancelBooking(bookingId) {
 .btn-outline:hover {
   background: #f3f4f6;
   border-color: #d1d5db;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .btn-with-icon {

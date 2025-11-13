@@ -4,7 +4,7 @@ require_once 'includes/auth.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Fetch booking with receipt details
+
 $stmt = $pdo->prepare("
   SELECT 
     b.*, 
@@ -43,17 +43,17 @@ if (!$b) {
   die('Booking not found.');
 }
 
-// Verify user has access to this receipt
+
 if ($b['renter_id'] != $_SESSION['user_id'] && $b['owner_id'] != $_SESSION['user_id']) {
   die('Access denied.');
 }
 
-// Calculate rental period and pricing
+
 $start_date = new DateTime($b['start_date']);
 $end_date = new DateTime($b['end_date']);
-$days = $start_date->diff($end_date)->days + 1; // Include both start and end dates
+$days = $start_date->diff($end_date)->days + 1;
 
-// Use receipt amounts if available, otherwise calculate
+
 if ($b['receipt_total']) {
   $subtotal = $b['subtotal'];
   $tax_amount = $b['tax_amount'];
@@ -61,7 +61,7 @@ if ($b['receipt_total']) {
   $total_price = $b['receipt_total'];
 } else {
   $subtotal = $days * $b['daily_price'];
-  $tax_amount = $subtotal * 0.18; // 18% GST
+  $tax_amount = $subtotal * 0.18;
   $discount = 0;
   $total_price = $subtotal + $tax_amount - $discount;
 }
@@ -825,7 +825,7 @@ $receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_
 
 <script>
 (function(){
-  // Initialize map with enhanced styling
+
   var rlat = <?php echo $b['renter_lat'] ? $b['renter_lat'] : 'null'; ?>;
   var rlng = <?php echo $b['renter_lng'] ? $b['renter_lng'] : 'null'; ?>;
   var olat = <?php echo $b['owner_lat'] ? $b['owner_lat'] : 'null'; ?>;
@@ -833,13 +833,13 @@ $receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_
   
   var map = L.map('map').setView([20.6,78.9],5);
   
-  // Add OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
   
-  // Custom icons
+
   var ownerIcon = L.divIcon({
     html: '<div style="background-color:#2d7d46; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>',
     className: 'custom-div-icon',
@@ -854,7 +854,7 @@ $receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_
     iconAnchor: [8, 8]
   });
   
-  // Add markers
+
   if (rlat && rlng) {
     L.marker([rlat, rlng], {icon: renterIcon})
       .addTo(map)
@@ -867,7 +867,7 @@ $receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_
       .bindPopup('<strong>Owner Location</strong><br><?php echo htmlspecialchars($b['owner_name']); ?>');
   }
   
-  // Set view to show both markers if available
+
   if (rlat && rlng && olat && olng) {
     var group = new L.featureGroup([
       L.marker([rlat, rlng]),

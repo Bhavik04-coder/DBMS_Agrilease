@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("UPDATE products SET title=?, description=?, price=?, category=?, image_path=? WHERE id=? AND listed_by=?");
             $stmt->execute([$title, $description, $price, $category, $image_path, $id, $_SESSION['user_id']]);
             $success = 'Product updated.';
-            // refresh data
+
             $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ? AND listed_by = ?");
             $stmt->execute([$id, $_SESSION['user_id']]);
             $product = $stmt->fetch();
