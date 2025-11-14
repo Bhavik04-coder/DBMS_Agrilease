@@ -85,11 +85,15 @@ $rlng = $rdata['lng'] ?? null;
 $renter_name = $rdata['full_name'] ?? $_SESSION['username'];
 
 
+// Calculate deposit and final amounts
+$deposit_amount = $total_price * 0.30;
+$final_amount = $total_price * 0.70;
+
 $stmt = $pdo->prepare("
     INSERT INTO bookings (
         product_id, renter_id, owner_id, status, start_date, end_date, 
-        total_price, renter_lat, renter_lng, owner_lat, owner_lng, notes
-    ) VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)
+        total_price, deposit_amount, final_amount, renter_lat, renter_lng, owner_lat, owner_lng, notes
+    ) VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
 
 $stmt->execute([
@@ -99,6 +103,8 @@ $stmt->execute([
     $start_date, 
     $end_date, 
     $total_price,
+    $deposit_amount,
+    $final_amount,
     $rlat, 
     $rlng, 
     $p['owner_lat'], 
@@ -107,6 +113,17 @@ $stmt->execute([
 ]);
 
 $bid = $pdo->lastInsertId();
+
+// Create initial payment records
+$pdo->prepare("
+    INSERT INTO payments (booking_id, payment_type, amount, payment_status, paid_by)
+    VALUES (?, 'deposit', ?, 'pending', ?)
+")->execute([$bid, $deposit_amount, $_SESSION['user_id']]);
+
+$pdo->prepare("
+    INSERT INTO payments (booking_id, payment_type, amount, payment_status, paid_by)
+    VALUES (?, 'final', ?, 'pending', ?)
+")->execute([$bid, $final_amount, $_SESSION['user_id']]);
 
 
 $u = $pdo->prepare("UPDATE products SET status='booked', availability='Rented' WHERE id = ?");

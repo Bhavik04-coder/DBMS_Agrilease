@@ -28,7 +28,11 @@ $stmt = $pdo->prepare("
     r.payment_status as receipt_payment_status,
     r.payment_date,
     r.payment_method,
-    r.transaction_id
+    r.transaction_id,
+    r.deposit_amount as receipt_deposit,
+    r.final_amount as receipt_final,
+    r.deposit_paid as receipt_deposit_paid,
+    r.final_paid as receipt_final_paid
   FROM bookings b 
   LEFT JOIN products p ON p.id = b.product_id 
   LEFT JOIN users u ON u.id = b.renter_id 
@@ -79,6 +83,14 @@ $receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_
       </svg>
       Back to Dashboard
     </a>
+    <?php if (!$b['deposit_paid'] || !$b['final_paid']): ?>
+    <a href="payment.php?id=<?php echo $id; ?>" class="btn btn-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Manage Payments
+    </a>
+    <?php endif; ?>
     <button class="btn btn-primary" onclick="window.print()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M6 9V3h12v6M6 21h12a2 2 0 002-2V9a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -216,6 +228,35 @@ $receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_
             <div class="price-label">Total Amount</div>
             <div class="price-amount">₹<?php echo number_format($total_price, 2); ?></div>
           </div>
+          
+          <!-- Payment Breakdown -->
+          <?php if ($b['deposit_amount'] > 0): ?>
+          <div class="payment-breakdown-section">
+            <div class="price-row payment-item">
+              <div class="price-label">
+                Deposit (30%)
+                <?php if ($b['deposit_paid']): ?>
+                  <span class="payment-badge paid">✓ Paid</span>
+                <?php else: ?>
+                  <span class="payment-badge pending">Pending</span>
+                <?php endif; ?>
+              </div>
+              <div class="price-amount">₹<?php echo number_format($b['deposit_amount'], 2); ?></div>
+            </div>
+            <div class="price-row payment-item">
+              <div class="price-label">
+                Final Payment (70%)
+                <?php if ($b['final_paid']): ?>
+                  <span class="payment-badge paid">✓ Paid</span>
+                <?php else: ?>
+                  <span class="payment-badge pending">Pending</span>
+                <?php endif; ?>
+              </div>
+              <div class="price-amount">₹<?php echo number_format($b['final_amount'], 2); ?></div>
+            </div>
+          </div>
+          <?php endif; ?>
+          
           <?php if ($b['payment_status'] || $b['receipt_payment_status']): ?>
           <div class="price-row payment-status">
             <div class="price-label">Payment Status</div>
@@ -627,6 +668,46 @@ $receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_
 
 .price-row.payment-status .status-refunded {
   color: #6b7280;
+}
+
+.payment-breakdown-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px dashed var(--border);
+}
+
+.price-row.payment-item {
+  background: #f9fafb;
+}
+
+.payment-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 0.5rem;
+}
+
+.payment-badge.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.payment-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #059669;
+  transform: translateY(-1px);
 }
 
 /* Map Section */
