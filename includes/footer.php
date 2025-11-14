@@ -1,4 +1,4 @@
-<?php // includes/footer.php ?>
+<?php ?>
 <footer class="site-footer">
   <div class="container">
     <div class="brand"><span class="logo-icon">🌾</span> AgriLease</div>

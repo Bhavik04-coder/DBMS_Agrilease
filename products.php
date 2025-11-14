@@ -3,16 +3,16 @@ require_once 'includes/config.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
-// Get search and filter parameters
+
 $search = sanitizeInput($_GET['search'] ?? '');
 $category = sanitizeInput($_GET['category'] ?? '');
 $location = sanitizeInput($_GET['location'] ?? '');
 $min_price = (float)($_GET['min_price'] ?? 0);
 $max_price = (float)($_GET['max_price'] ?? 0);
 
-// Build query
-$where_conditions = ["p.listed_by != ?"];
-$params = [$_SESSION['user_id']];
+
+$where_conditions = ["p.status = 'available'"];
+$params = [];
 
 if ($search) {
     $where_conditions[] = "(p.title LIKE ? OR p.description LIKE ?)";
@@ -43,16 +43,18 @@ if ($max_price > 0) {
 $where_clause = implode(' AND ', $where_conditions);
 
 $stmt = $pdo->prepare("
-    SELECT p.*, u.username, u.full_name 
+    SELECT p.*, u.username, u.full_name,
+    CASE WHEN p.listed_by = ? THEN 1 ELSE 0 END as is_own_product
     FROM products p 
     LEFT JOIN users u ON u.id = p.listed_by 
-    WHERE $where_clause AND p.status = 'available'
+    WHERE $where_clause
     ORDER BY p.created_at DESC
 ");
-$stmt->execute($params);
+$params_with_user = array_merge([$_SESSION['user_id']], $params);
+$stmt->execute($params_with_user);
 $products = $stmt->fetchAll();
 
-// Get categories for filter
+
 $cat_stmt = $pdo->query("SELECT DISTINCT category FROM products WHERE category IS NOT NULL ORDER BY category");
 $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
 ?>
@@ -118,6 +120,16 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
   <!-- Results -->
   <div class="results-header">
     <h2>Available Equipment (<?php echo count($products); ?>)</h2>
+    <?php if (count($products) === 0): ?>
+      <p style="color: #6b7280; margin-top: 0.5rem;">
+        <?php 
+
+        $total_check = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
+        $available_check = $pdo->query("SELECT COUNT(*) FROM products WHERE status = 'available'")->fetchColumn();
+        echo "Total products in database: $total_check | Available: $available_check";
+        ?>
+      </p>
+    <?php endif; ?>
   </div>
 
   <?php if (empty($products)): ?>
@@ -141,6 +153,9 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
                  alt="<?php echo htmlspecialchars($p['title']); ?>" 
                  onerror="this.src='assets/images/placeholder.jpg'">
             <div class="card-badge"><?php echo htmlspecialchars($p['category']); ?></div>
+            <?php if ($p['is_own_product']): ?>
+              <div class="own-product-badge">Your Product</div>
+            <?php endif; ?>
             <div class="card-overlay">
               <div class="overlay-actions">
                 <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-light btn-sm">
@@ -150,16 +165,12 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
                   </svg>
                   View Details
                 </a>
-                <form method="post" action="book.php" class="book-form">
-                  <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-                  <input type="hidden" name="product_id" value="<?php echo (int)$p['id']; ?>">
-                  <button class="btn btn-primary btn-sm" type="submit">
-                    <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
-                    </svg>
-                    Book Now
-                  </button>
-                </form>
+                <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
+                  </svg>
+                  Book Now
+                </a>
               </div>
             </div>
           </div>
@@ -197,11 +208,16 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
               <a class="btn btn-outline btn-sm" href="product_detail.php?id=<?php echo (int)$p['id']; ?>">
                 View Details
               </a>
-              <form method="post" action="book.php" class="book-form">
-                <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-                <input type="hidden" name="product_id" value="<?php echo (int)$p['id']; ?>">
-                <button class="btn btn-primary btn-sm" type="submit">Book Now</button>
-              </form>
+              <?php if ($p['is_own_product']): ?>
+                <a href="edit_product.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-success btn-sm">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                  </svg>
+                  Edit
+                </a>
+              <?php else: ?>
+                <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm">Book Now</a>
+              <?php endif; ?>
             </div>
           </div>
         </div>
@@ -317,6 +333,19 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
   top: 12px;
   right: 12px;
   background: rgba(102, 126, 234, 0.9);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+.own-product-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(16, 185, 129, 0.9);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -444,6 +473,16 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
 
 .btn-light:hover {
   background: white;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #059669;
+  transform: translateY(-1px);
 }
 
 .btn-sm {

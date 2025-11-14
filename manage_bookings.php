@@ -6,7 +6,48 @@ require_once 'includes/functions.php';
 $error = '';
 $success = '';
 
-// Handle booking status updates
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        $error = 'Invalid session. Please refresh and try again.';
+    } else {
+        $booking_id = (int)$_POST['booking_id'];
+        
+
+        $stmt = $pdo->prepare("
+            SELECT b.*, p.title as product_title, u.full_name as owner_name 
+            FROM bookings b 
+            LEFT JOIN products p ON p.id = b.product_id 
+            LEFT JOIN users u ON u.id = b.owner_id 
+            WHERE b.id = ? AND b.renter_id = ?
+        ");
+        $stmt->execute([$booking_id, $_SESSION['user_id']]);
+        $booking = $stmt->fetch();
+        
+        if (!$booking) {
+            $error = 'Booking not found or you do not have permission to cancel it.';
+        } elseif ($booking['status'] === 'completed') {
+            $error = 'Cannot cancel a completed booking.';
+        } elseif ($booking['status'] === 'cancelled') {
+            $error = 'This booking is already cancelled.';
+        } else {
+
+            $update_stmt = $pdo->prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ? AND renter_id = ?");
+            $update_stmt->execute([$booking_id, $_SESSION['user_id']]);
+            
+
+            $pdo->prepare("UPDATE products SET status = 'available', availability = 'Available' WHERE id = ?")
+                ->execute([$booking['product_id']]);
+            
+
+            sendNotification($booking['owner_id'], 'Booking Cancelled', "The booking for '{$booking['product_title']}' has been cancelled by the renter.", 'booking');
+            
+            $success = 'Booking cancelled successfully. The product is now available for others to book.';
+        }
+    }
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid session. Please refresh and try again.';
@@ -14,12 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
         $booking_id = (int)$_POST['booking_id'];
         $new_status = $_POST['status'];
         
-        // Validate status
+
         $valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled'];
         if (!in_array($new_status, $valid_statuses)) {
             $error = 'Invalid status.';
         } else {
-            // Get booking details
+
             $stmt = $pdo->prepare("
                 SELECT b.*, p.title as product_title, u.full_name as renter_name 
                 FROM bookings b 
@@ -33,11 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
             if (!$booking) {
                 $error = 'Booking not found.';
             } else {
-                // Update booking status
+
                 $update_stmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ? AND owner_id = ?");
                 $update_stmt->execute([$new_status, $booking_id, $_SESSION['user_id']]);
                 
-                // Update product status based on booking status
+
                 if ($new_status === 'confirmed') {
                     $pdo->prepare("UPDATE products SET status = 'booked', availability = 'Rented' WHERE id = ?")
                         ->execute([$booking['product_id']]);
@@ -46,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
                         ->execute([$booking['product_id']]);
                 }
                 
-                // Send notification to renter
+
                 $status_messages = [
                     'confirmed' => "Your booking for '{$booking['product_title']}' has been confirmed!",
                     'completed' => "Your booking for '{$booking['product_title']}' has been marked as completed.",
@@ -57,13 +98,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_booking'])) {
                     sendNotification($booking['renter_id'], 'Booking Status Update', $status_messages[$new_status], 'booking');
                 }
                 
+
+                if ($new_status === 'confirmed') {
+                    $_SESSION['booking_confirmed'] = $booking_id;
+                    header('Location: booking_confirmed.php?id=' . $booking_id);
+                    exit;
+                }
+                
                 $success = 'Booking status updated successfully.';
             }
         }
     }
 }
 
-// Get bookings received by the user (as owner)
+
 $received_stmt = $pdo->prepare("
     SELECT b.*, p.title as product_title, p.image_path, u.full_name as renter_name, u.email as renter_email, u.phone as renter_phone
     FROM bookings b 
@@ -75,7 +123,7 @@ $received_stmt = $pdo->prepare("
 $received_stmt->execute([$_SESSION['user_id']]);
 $received_bookings = $received_stmt->fetchAll();
 
-// Get bookings made by the user (as renter)
+
 $made_stmt = $pdo->prepare("
     SELECT b.*, p.title as product_title, p.image_path, u.full_name as owner_name, u.email as owner_email, u.phone as owner_phone
     FROM bookings b 
@@ -110,6 +158,13 @@ $made_bookings = $made_stmt->fetchAll();
         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.47a.75.75 0 00-1.06 1.06l2 2a.75.75 0 001.154-.114l4-5.5z" clip-rule="evenodd" />
       </svg>
       <?php echo $success; ?>
+      <?php if (isset($_SESSION['booking_confirmed'])): ?>
+        <br><br>
+        <a href="booking_confirmed.php?id=<?php echo $_SESSION['booking_confirmed']; ?>" class="btn btn-primary" style="margin-top:10px;">
+          View Booking Details & Receipt
+        </a>
+        <?php unset($_SESSION['booking_confirmed']); ?>
+      <?php endif; ?>
     </div>
   <?php endif; ?>
 
@@ -331,6 +386,20 @@ $made_bookings = $made_stmt->fetchAll();
               </div>
 
               <div class="booking-actions">
+                <?php if (in_array($booking['status'], ['pending', 'confirmed'])): ?>
+                  <form method="post" class="action-form" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                    <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
+                    <input type="hidden" name="cancel_booking" value="1">
+                    <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
+                    <button type="submit" class="btn btn-danger btn-sm">
+                      <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                      </svg>
+                      Cancel Booking
+                    </button>
+                  </form>
+                <?php endif; ?>
+                
                 <a href="receipt.php?id=<?php echo $booking['id']; ?>" class="btn btn-primary btn-sm">
                   <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
@@ -673,20 +742,20 @@ $made_bookings = $made_stmt->fetchAll();
 
 <script>
 function showTab(tabName) {
-  // Hide all tabs
+
   document.querySelectorAll('.tab-content').forEach(tab => {
     tab.classList.remove('active');
   });
   
-  // Remove active class from all buttons
+
   document.querySelectorAll('.tab-button').forEach(btn => {
     btn.classList.remove('active');
   });
   
-  // Show selected tab
+
   document.getElementById(tabName + '-tab').classList.add('active');
   
-  // Add active class to clicked button
+
   event.target.classList.add('active');
 }
 </script>

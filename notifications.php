@@ -5,7 +5,7 @@ require_once 'includes/functions.php';
 
 $success = '';
 
-// Handle marking notifications as read
+
 if (isset($_GET['mark'])) {
     $id = (int)$_GET['mark'];
     $stmt = $pdo->prepare("UPDATE notifications SET is_read=1 WHERE id=? AND user_id=?");
@@ -13,14 +13,14 @@ if (isset($_GET['mark'])) {
     $success = 'Notification marked as read.';
 }
 
-// Handle marking all as read
+
 if (isset($_GET['mark_all'])) {
     $stmt = $pdo->prepare("UPDATE notifications SET is_read=1 WHERE user_id=?");
     $stmt->execute([$_SESSION['user_id']]);
     $success = 'All notifications marked as read.';
 }
 
-// Handle deleting notification
+
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     $stmt = $pdo->prepare("DELETE FROM notifications WHERE id=? AND user_id=?");
@@ -28,12 +28,12 @@ if (isset($_GET['delete'])) {
     $success = 'Notification deleted.';
 }
 
-// Get notifications
+
 $stmt = $pdo->prepare("SELECT * FROM notifications WHERE user_id=? ORDER BY created_at DESC");
 $stmt->execute([$_SESSION['user_id']]);
 $notifications = $stmt->fetchAll();
 
-// Separate unread and read notifications
+
 $unread_notifications = array_filter($notifications, function($n) { return !$n['is_read']; });
 $read_notifications = array_filter($notifications, function($n) { return $n['is_read']; });
 ?>

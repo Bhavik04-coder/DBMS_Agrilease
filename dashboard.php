@@ -3,37 +3,37 @@ require_once 'includes/config.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
-// Handle product deletion
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
     if (verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $product_id = (int)$_POST['product_id'];
         
-        // Verify ownership
+
         $stmt = $pdo->prepare("SELECT id FROM products WHERE id = ? AND listed_by = ?");
         $stmt->execute([$product_id, $_SESSION['user_id']]);
         
         if ($stmt->fetch()) {
-            // Delete the product
+
             $delete_stmt = $pdo->prepare("DELETE FROM products WHERE id = ? AND listed_by = ?");
             $delete_stmt->execute([$product_id, $_SESSION['user_id']]);
             
-            // Redirect to prevent resubmission
+
             header('Location: dashboard.php?deleted=1');
             exit;
         }
     }
 }
 
-// Fetch products with owner username
+
 $stmt = $pdo->query("SELECT p.*, u.username, u.full_name FROM products p LEFT JOIN users u ON u.id = p.listed_by ORDER BY p.created_at DESC");
 $products = $stmt->fetchAll();
 
-// Fetch bookings involving user
+
 $stmt = $pdo->prepare("SELECT b.*, p.title as product_title FROM bookings b LEFT JOIN products p ON p.id = b.product_id WHERE b.renter_id = ? OR b.owner_id = ? ORDER BY b.created_at DESC");
 $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
 $bookings = $stmt->fetchAll();
 
-// Separate user's own products and other products
+
 $myProducts = [];
 $otherProducts = [];
 foreach ($products as $p) {
@@ -44,7 +44,7 @@ foreach ($products as $p) {
     }
 }
 
-// Separate bookings by type
+
 $receivedBookings = [];
 foreach ($bookings as $b) {
     if ((int)$b['renter_id'] !== (int)($_SESSION['user_id'] ?? 0)) {
@@ -213,7 +213,7 @@ foreach ($bookings as $b) {
               </div>
               <div class="product-overlay">
                 <div class="overlay-actions">
-                  <a href="product.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-light btn-sm">
+                  <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-light btn-sm">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -311,18 +311,14 @@ foreach ($bookings as $b) {
               <?php endif; ?>
               <div class="product-overlay">
                 <div class="overlay-actions">
-                  <a href="product.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-light btn-sm">View Details</a>
-                  <form method="post" action="book.php" class="book-form">
-                    <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-                    <input type="hidden" name="product_id" value="<?php echo (int)$p['id']; ?>">
-                    <button class="btn btn-primary btn-sm btn-icon" type="submit">
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2.66675 4H13.3334V13.3333C13.3334 13.687 13.1929 14.0261 12.9429 14.2761C12.6928 14.5262 12.3537 14.6667 12.0001 14.6667H4.00008C3.64646 14.6667 3.30732 14.5262 3.05727 14.2761C2.80722 14.0261 2.66675 13.687 2.66675 13.3333V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M10.6667 2.66667H5.33341C4.97979 2.66667 4.64065 2.80714 4.3906 3.05719C4.14055 3.30724 4.00008 3.64638 4.00008 4V4H12.0001V4C12.0001 3.64638 11.8596 3.30724 11.6096 3.05719C11.3595 2.80714 11.0204 2.66667 10.6667 2.66667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      Book Now
-                    </button>
-                  </form>
+                  <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-light btn-sm">View Details</a>
+                  <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm btn-icon">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2.66675 4H13.3334V13.3333C13.3334 13.687 13.1929 14.0261 12.9429 14.2761C12.6928 14.5262 12.3537 14.6667 12.0001 14.6667H4.00008C3.64646 14.6667 3.30732 14.5262 3.05727 14.2761C2.80722 14.0261 2.66675 13.687 2.66675 13.3333V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10.6667 2.66667H5.33341C4.97979 2.66667 4.64065 2.80714 4.3906 3.05719C4.14055 3.30724 4.00008 3.64638 4.00008 4V4H12.0001V4C12.0001 3.64638 11.8596 3.30724 11.6096 3.05719C11.3595 2.80714 11.0204 2.66667 10.6667 2.66667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Book Now
+                  </a>
                 </div>
               </div>
             </div>

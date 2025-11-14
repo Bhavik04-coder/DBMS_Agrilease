@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($phone && !validatePhone($phone)) $errors[] = 'Phone must be 10-15 digits.';
 
         if (!$errors) {
-            // check duplicate username
+
             $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
             $stmt->execute([$username]);
             if ($stmt->fetch()) {

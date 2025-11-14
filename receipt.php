@@ -1,17 +1,76 @@
 <?php
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
+
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$stmt = $pdo->prepare("SELECT b.*, p.title as product_title, p.image_path, p.price as daily_price, u.full_name as renter_name, u.email as renter_email, o.full_name as owner_name, o.email as owner_email FROM bookings b LEFT JOIN products p ON p.id = b.product_id LEFT JOIN users u ON u.id = b.renter_id LEFT JOIN users o ON o.id = b.owner_id WHERE b.id = ?");
+
+
+$stmt = $pdo->prepare("
+  SELECT 
+    b.*, 
+    p.title as product_title, 
+    p.image_path, 
+    p.price as daily_price,
+    p.category,
+    u.full_name as renter_name, 
+    u.email as renter_email,
+    u.phone as renter_phone,
+    u.address as renter_address,
+    o.full_name as owner_name, 
+    o.email as owner_email,
+    o.phone as owner_phone,
+    o.address as owner_address,
+    r.receipt_number,
+    r.subtotal,
+    r.tax_amount,
+    r.discount_amount,
+    r.total_amount as receipt_total,
+    r.payment_status as receipt_payment_status,
+    r.payment_date,
+    r.payment_method,
+    r.transaction_id,
+    r.deposit_amount as receipt_deposit,
+    r.final_amount as receipt_final,
+    r.deposit_paid as receipt_deposit_paid,
+    r.final_paid as receipt_final_paid
+  FROM bookings b 
+  LEFT JOIN products p ON p.id = b.product_id 
+  LEFT JOIN users u ON u.id = b.renter_id 
+  LEFT JOIN users o ON o.id = b.owner_id
+  LEFT JOIN receipts r ON r.booking_id = b.id
+  WHERE b.id = ?
+");
 $stmt->execute([$id]);
 $b = $stmt->fetch();
-if (!$b) die('Booking not found.');
 
-// Calculate rental period and total
+if (!$b) {
+  die('Booking not found.');
+}
+
+
+if ($b['renter_id'] != $_SESSION['user_id'] && $b['owner_id'] != $_SESSION['user_id']) {
+  die('Access denied.');
+}
+
+
 $start_date = new DateTime($b['start_date']);
 $end_date = new DateTime($b['end_date']);
-$days = $start_date->diff($end_date)->days + 1; // Include both start and end dates
-$total_price = $days * $b['daily_price'];
+$days = $start_date->diff($end_date)->days + 1;
+
+
+if ($b['receipt_total']) {
+  $subtotal = $b['subtotal'];
+  $tax_amount = $b['tax_amount'];
+  $discount = $b['discount_amount'];
+  $total_price = $b['receipt_total'];
+} else {
+  $subtotal = $days * $b['daily_price'];
+  $tax_amount = $subtotal * 0.18;
+  $discount = 0;
+  $total_price = $subtotal + $tax_amount - $discount;
+}
+
+$receipt_number = $b['receipt_number'] ?: 'RCP-' . str_pad($id, 8, '0', STR_PAD_LEFT);
 ?>
 <?php include 'includes/header.php'; ?>
 
@@ -24,6 +83,14 @@ $total_price = $days * $b['daily_price'];
       </svg>
       Back to Dashboard
     </a>
+    <?php if (!$b['deposit_paid'] || !$b['final_paid']): ?>
+    <a href="payment.php?id=<?php echo $id; ?>" class="btn btn-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Manage Payments
+    </a>
+    <?php endif; ?>
     <button class="btn btn-primary" onclick="window.print()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M6 9V3h12v6M6 21h12a2 2 0 002-2V9a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -50,8 +117,8 @@ $total_price = $days * $b['daily_price'];
         </div>
       </div>
       <div class="receipt-meta">
-        <div class="receipt-id">Booking #<?php echo str_pad((int)$b['id'], 6, '0', STR_PAD_LEFT); ?></div>
-        <div class="receipt-date"><?php echo date('F j, Y', strtotime($b['created_at'])); ?></div>
+        <div class="receipt-id"><?php echo htmlspecialchars($receipt_number); ?></div>
+        <div class="receipt-date">Issue Date: <?php echo date('F j, Y', strtotime($b['created_at'])); ?></div>
         <div class="status-badge status-<?php echo htmlspecialchars($b['status']); ?>">
           <?php echo htmlspecialchars(ucfirst($b['status'])); ?>
         </div>
@@ -144,13 +211,72 @@ $total_price = $days * $b['daily_price'];
         <h3 class="section-title">Payment Summary</h3>
         <div class="pricing-breakdown">
           <div class="price-row">
-            <div class="price-label">Daily Rate × <?php echo $days; ?> days</div>
-            <div class="price-amount">₹<?php echo number_format((float)$b['daily_price'], 2); ?></div>
+            <div class="price-label">Daily Rate (₹<?php echo number_format((float)$b['daily_price'], 2); ?>) × <?php echo $days; ?> day<?php echo $days > 1 ? 's' : ''; ?></div>
+            <div class="price-amount">₹<?php echo number_format($subtotal, 2); ?></div>
           </div>
+          <div class="price-row">
+            <div class="price-label">GST (18%)</div>
+            <div class="price-amount">₹<?php echo number_format($tax_amount, 2); ?></div>
+          </div>
+          <?php if ($discount > 0): ?>
+          <div class="price-row discount">
+            <div class="price-label">Discount</div>
+            <div class="price-amount">-₹<?php echo number_format($discount, 2); ?></div>
+          </div>
+          <?php endif; ?>
           <div class="price-row total">
             <div class="price-label">Total Amount</div>
             <div class="price-amount">₹<?php echo number_format($total_price, 2); ?></div>
           </div>
+          
+          <!-- Payment Breakdown -->
+          <?php if ($b['deposit_amount'] > 0): ?>
+          <div class="payment-breakdown-section">
+            <div class="price-row payment-item">
+              <div class="price-label">
+                Deposit (30%)
+                <?php if ($b['deposit_paid']): ?>
+                  <span class="payment-badge paid">✓ Paid</span>
+                <?php else: ?>
+                  <span class="payment-badge pending">Pending</span>
+                <?php endif; ?>
+              </div>
+              <div class="price-amount">₹<?php echo number_format($b['deposit_amount'], 2); ?></div>
+            </div>
+            <div class="price-row payment-item">
+              <div class="price-label">
+                Final Payment (70%)
+                <?php if ($b['final_paid']): ?>
+                  <span class="payment-badge paid">✓ Paid</span>
+                <?php else: ?>
+                  <span class="payment-badge pending">Pending</span>
+                <?php endif; ?>
+              </div>
+              <div class="price-amount">₹<?php echo number_format($b['final_amount'], 2); ?></div>
+            </div>
+          </div>
+          <?php endif; ?>
+          
+          <?php if ($b['payment_status'] || $b['receipt_payment_status']): ?>
+          <div class="price-row payment-status">
+            <div class="price-label">Payment Status</div>
+            <div class="price-amount status-<?php echo $b['receipt_payment_status'] ?: $b['payment_status']; ?>">
+              <?php echo ucfirst($b['receipt_payment_status'] ?: $b['payment_status']); ?>
+            </div>
+          </div>
+          <?php endif; ?>
+          <?php if ($b['payment_method']): ?>
+          <div class="price-row">
+            <div class="price-label">Payment Method</div>
+            <div class="price-amount"><?php echo htmlspecialchars($b['payment_method']); ?></div>
+          </div>
+          <?php endif; ?>
+          <?php if ($b['transaction_id']): ?>
+          <div class="price-row">
+            <div class="price-label">Transaction ID</div>
+            <div class="price-amount"><?php echo htmlspecialchars($b['transaction_id']); ?></div>
+          </div>
+          <?php endif; ?>
         </div>
       </div>
 
@@ -522,6 +648,68 @@ $total_price = $days * $b['daily_price'];
   font-size: 1.1rem;
 }
 
+.price-row.discount .price-amount {
+  color: #10b981;
+}
+
+.price-row.payment-status .price-amount {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.price-row.payment-status .status-paid {
+  color: #10b981;
+}
+
+.price-row.payment-status .status-pending {
+  color: #f59e0b;
+}
+
+.price-row.payment-status .status-refunded {
+  color: #6b7280;
+}
+
+.payment-breakdown-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px dashed var(--border);
+}
+
+.price-row.payment-item {
+  background: #f9fafb;
+}
+
+.payment-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 0.5rem;
+}
+
+.payment-badge.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.payment-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
 /* Map Section */
 .map-container {
   border: 1px solid var(--border);
@@ -718,7 +906,7 @@ $total_price = $days * $b['daily_price'];
 
 <script>
 (function(){
-  // Initialize map with enhanced styling
+
   var rlat = <?php echo $b['renter_lat'] ? $b['renter_lat'] : 'null'; ?>;
   var rlng = <?php echo $b['renter_lng'] ? $b['renter_lng'] : 'null'; ?>;
   var olat = <?php echo $b['owner_lat'] ? $b['owner_lat'] : 'null'; ?>;
@@ -726,13 +914,13 @@ $total_price = $days * $b['daily_price'];
   
   var map = L.map('map').setView([20.6,78.9],5);
   
-  // Add OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
   
-  // Custom icons
+
   var ownerIcon = L.divIcon({
     html: '<div style="background-color:#2d7d46; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>',
     className: 'custom-div-icon',
@@ -747,7 +935,7 @@ $total_price = $days * $b['daily_price'];
     iconAnchor: [8, 8]
   });
   
-  // Add markers
+
   if (rlat && rlng) {
     L.marker([rlat, rlng], {icon: renterIcon})
       .addTo(map)
@@ -760,7 +948,7 @@ $total_price = $days * $b['daily_price'];
       .bindPopup('<strong>Owner Location</strong><br><?php echo htmlspecialchars($b['owner_name']); ?>');
   }
   
-  // Set view to show both markers if available
+
   if (rlat && rlng && olat && olng) {
     var group = new L.featureGroup([
       L.marker([rlat, rlng]),

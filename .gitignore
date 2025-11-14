@@ -1,0 +1,35 @@
+# Ignore uploaded images (except placeholders)
+assets/images/*
+!assets/images/.gitkeep
+!assets/images/placeholder.jpg
+!assets/images/Harvester2.jpg
+
+# Ignore config file with sensitive data (optional - you may want to keep it)
+# includes/config.php
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ignore logs
+*.log
+error_log
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.cache
+
+# Ignore node modules if you add any
+node_modules/
+
+# Ignore vendor directory if using Composer
+vendor/

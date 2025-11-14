@@ -68,85 +68,146 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
         
         <div class="form-grid">
-          <div class="form-group">
-            <label for="title" class="form-label">Product Title *</label>
-            <input id="title" name="title" class="form-input" placeholder="Enter product title" required>
+          <div class="form-group full-width">
+            <label for="title" class="form-label">
+              <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M20 7h-9M14 17H5M17 12H3" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Product Title *
+            </label>
+            <input id="title" name="title" class="form-input" placeholder="e.g., John Deere 5050D Tractor" required>
           </div>
-          
+        </div>
+
+        <div class="form-grid">
           <div class="form-group">
-            <label for="category" class="form-label">Category</label>
+            <label for="category" class="form-label">
+              <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="3" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="14" y="3" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="14" y="14" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="3" y="14" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Category *
+            </label>
             <div class="select-wrapper">
-              <select id="category" name="category" class="form-input">
-                <option value="General">General</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Tools">Tools</option>
-                <option value="Sports">Sports</option>
-                <option value="Furniture">Furniture</option>
-                <option value="Vehicles">Vehicles</option>
-                <option value="Other">Other</option>
+              <select id="category" name="category" class="form-input" required>
+                <option value="">Select category</option>
+                <option value="Tractors">Tractors</option>
+                <option value="Harvesters">Harvesters</option>
+                <option value="Tillers">Tillers & Cultivators</option>
+                <option value="Seeders">Seeders & Planters</option>
+                <option value="Sprayers">Sprayers</option>
+                <option value="Irrigation">Irrigation Equipment</option>
+                <option value="Trailers">Trailers & Trolleys</option>
+                <option value="Other">Other Equipment</option>
               </select>
               <svg class="select-arrow" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M8 11L3 6h10l-5 5z"/>
               </svg>
             </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label for="price" class="form-label">Price per day (INR) *</label>
-          <div class="price-input-wrapper">
-            <span class="price-prefix">₹</span>
-            <input id="price" name="price" type="number" step="0.01" min="0" class="form-input price-input" placeholder="0.00" required>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="location" class="form-label">Location (City) *</label>
-          <input id="location" name="location" class="form-input" placeholder="Enter your city">
-        </div>
-
-        <div class="form-grid">
           <div class="form-group">
-            <label for="lat" class="form-label">Latitude</label>
-            <div class="location-input-wrapper">
-              <input id="lat" name="lat" class="form-input" placeholder="e.g., 28.6139" readonly>
-              <button type="button" id="get-location" class="location-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C13.1046 2 14 2.89543 14 4C14 5.10457 13.1046 6 12 6C10.8954 6 10 5.10457 10 4C10 2.89543 10.8954 2 12 2Z" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 14C13.1046 14 14 14.8954 14 16C14 17.1046 13.1046 18 12 18C10.8954 18 10 17.1046 10 16C10 14.8954 10.8954 14 12 14Z" stroke="currentColor" stroke-width="2"/>
-                  <path d="M6 8C7.10457 8 8 8.89543 8 10C8 11.1046 7.10457 12 6 12C4.89543 12 4 11.1046 4 10C4 8.89543 4.89543 8 6 8Z" stroke="currentColor" stroke-width="2"/>
-                  <path d="M18 8C19.1046 8 20 8.89543 20 10C20 11.1046 19.1046 12 18 12C16.8954 12 16 11.1046 16 10C16 8.89543 16.8954 8 18 8Z" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                Get My Location
-              </button>
+            <label for="price" class="form-label">
+              <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Daily Rental Price *
+            </label>
+            <div class="price-input-wrapper">
+              <span class="price-prefix">₹</span>
+              <input id="price" name="price" type="number" step="0.01" min="0" class="form-input price-input" placeholder="1500.00" required>
+              <span class="price-suffix">/day</span>
             </div>
           </div>
-          <div class="form-group">
-            <label for="lng" class="form-label">Longitude</label>
-            <input id="lng" name="lng" class="form-input" placeholder="e.g., 77.2090" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="location" class="form-label">
+            <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke-width="2"/>
+              <circle cx="12" cy="10" r="3" stroke-width="2"/>
+            </svg>
+            Location *
+          </label>
+          <input id="location" name="location" class="form-input" placeholder="e.g., Ludhiana, Punjab" required>
+        </div>
+
+        <div class="location-section">
+          <div class="location-header">
+            <label class="form-label">
+              <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" stroke-width="2"/>
+                <circle cx="12" cy="10" r="3" stroke-width="2"/>
+              </svg>
+              GPS Coordinates (Optional)
+            </label>
+            <button type="button" id="get-location" class="location-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                <path d="M12 16v-4M12 8h.01" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Auto-Detect Location
+            </button>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="lat" class="form-label-small">Latitude</label>
+              <input id="lat" name="lat" class="form-input" placeholder="28.6139" readonly>
+            </div>
+            <div class="form-group">
+              <label for="lng" class="form-label-small">Longitude</label>
+              <input id="lng" name="lng" class="form-input" placeholder="77.2090" readonly>
+            </div>
+          </div>
+
+          <div class="location-status" id="location-status" style="display: none;">
+            <div class="status-message"></div>
           </div>
         </div>
 
-        <div class="location-status" id="location-status" style="display: none;">
-          <div class="status-message"></div>
+        <div class="form-group">
+          <label for="description" class="form-label">
+            <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke-width="2"/>
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Description
+          </label>
+          <textarea id="description" name="description" rows="5" class="form-textarea" placeholder="Describe your equipment: condition, features, specifications, usage instructions, etc."></textarea>
+          <p class="field-help">Provide detailed information to help renters understand your equipment better.</p>
         </div>
 
         <div class="form-group">
-          <label for="description" class="form-label">Description</label>
-          <textarea id="description" name="description" rows="5" class="form-textarea" placeholder="Provide detailed information about your product..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="image" class="form-label">Product Image</label>
-          <div class="file-upload-wrapper">
+          <label for="image" class="form-label">
+            <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke-width="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5" stroke-width="2"/>
+              <path d="M21 15l-5-5L5 21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Product Image
+          </label>
+          <div class="file-upload-wrapper" id="file-upload-wrapper">
             <input id="image" name="image" type="file" accept="image/*" class="file-input">
             <label for="image" class="file-upload-label">
-              <svg class="file-upload-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M14,13V17H10V13H7L12,8L17,13M19.35,10.03C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.03C2.34,8.36 0,10.9 0,14A6,6 0 0,0 6,20H19A5,5 0 0,0 24,15C24,12.36 21.95,10.22 19.35,10.03Z"/>
-              </svg>
-              <span>Choose an image</span>
+              <div class="upload-icon-wrapper">
+                <svg class="file-upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="upload-text">Click to upload or drag and drop</span>
+              <span class="upload-subtext">PNG, JPG or JPEG (Max 5MB)</span>
             </label>
-            <p class="file-help">PNG or JPG recommended. Max size: 5MB</p>
+            <div id="image-preview" class="image-preview" style="display: none;">
+              <img id="preview-img" src="" alt="Preview">
+              <button type="button" id="remove-image" class="remove-image-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -226,18 +287,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .form-group {
   margin-bottom: 1.5rem;
 }
 
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
 .form-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
   color: #374151;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
+}
+
+.form-label-small {
+  display: block;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.label-icon {
+  flex-shrink: 0;
+  color: #667eea;
+}
+
+.field-help {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.4;
 }
 
 .form-input, .form-textarea {
@@ -276,32 +364,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 .price-input-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .price-prefix {
   position: absolute;
   left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+  color: #667eea;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.price-suffix {
+  position: absolute;
+  right: 1rem;
   color: #6b7280;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .price-input {
   padding-left: 2.5rem;
+  padding-right: 4rem;
 }
 
 .file-upload-wrapper {
   border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  padding: 2rem;
+  border-radius: 12px;
+  padding: 2.5rem;
   text-align: center;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  background: #f9fafb;
+  position: relative;
 }
 
 .file-upload-wrapper:hover {
   border-color: #667eea;
-  background-color: #f8fafc;
+  background-color: #f0f4ff;
+  transform: translateY(-2px);
 }
 
 .file-input {
@@ -312,25 +413,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   cursor: pointer;
-  color: #6b7280;
-  font-weight: 500;
-  transition: color 0.2s;
+  transition: all 0.2s;
 }
 
-.file-upload-label:hover {
-  color: #667eea;
+.upload-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.file-upload-wrapper:hover .upload-icon-wrapper {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .file-upload-icon {
-  color: #9ca3af;
+  color: #667eea;
 }
 
-.file-help {
-  margin-top: 0.75rem;
+.upload-text {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.upload-subtext {
   font-size: 0.875rem;
   color: #6b7280;
+}
+
+.image-preview {
+  position: relative;
+  margin-top: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.remove-image-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
 }
 
 .form-actions {
@@ -373,41 +529,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   flex-shrink: 0;
 }
 
-.location-input-wrapper {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-end;
+.location-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.location-input-wrapper .form-input {
-  flex: 1;
+.location-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .location-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: #10b981;
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
 .location-btn:hover {
-  background: #059669;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
 
 .location-btn:disabled {
   background: #9ca3af;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .location-btn svg {
@@ -477,6 +642,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Image preview functionality
+  const imageInput = document.getElementById('image');
+  const imagePreview = document.getElementById('image-preview');
+  const previewImg = document.getElementById('preview-img');
+  const removeImageBtn = document.getElementById('remove-image');
+  const fileUploadLabel = document.querySelector('.file-upload-label');
+
+  imageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        imagePreview.style.display = 'block';
+        fileUploadLabel.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  removeImageBtn.addEventListener('click', function() {
+    imageInput.value = '';
+    imagePreview.style.display = 'none';
+    fileUploadLabel.style.display = 'flex';
+  });
+
+  // Location functionality
   const getLocationBtn = document.getElementById('get-location');
   const latInput = document.getElementById('lat');
   const lngInput = document.getElementById('lng');
@@ -532,9 +724,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset button
         getLocationBtn.disabled = false;
         getLocationBtn.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"/>
-            <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M20 6L9 17l-5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           Location Captured
         `;
@@ -565,9 +756,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset button
         getLocationBtn.disabled = false;
         getLocationBtn.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"/>
-            <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+            <path d="M12 16v-4M12 8h.01" stroke-width="2" stroke-linecap="round"/>
           </svg>
           Try Again
         `;
