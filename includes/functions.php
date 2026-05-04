@@ -1,4 +1,16 @@
 <?php
+/**
+ * Translate a key using the current language.
+ * Falls back to the key itself if not found.
+ */
+function t($key, $replace = []) {
+    $str = $GLOBALS['_lang'][$key] ?? $key;
+    foreach ($replace as $search => $val) {
+        $str = str_replace('{' . $search . '}', $val, $str);
+    }
+    return $str;
+}
+
 function sanitizeInput($data) {
     return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
 }

@@ -11,13 +11,13 @@ $err = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        $err = 'Invalid session. Please refresh and try again.';
+        $err = t('login_err_session');
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = trim($_POST['password'] ?? '');
 
         if ($username === '' || $password === '') {
-            $err = 'Please enter username and password.';
+            $err = t('login_err_empty');
         } else {
             $stmt = $pdo->prepare("SELECT id, username, password FROM users WHERE username = ?");
             $stmt->execute([$username]);
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 unset($_SESSION['redirect_url']);
                 exit;
             } else {
-                $err = 'Invalid credentials.';
+                $err = t('login_err_invalid');
             }
         }
     }
@@ -38,28 +38,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 <?php include 'includes/header.php'; ?>
 <div class="container page">
   <div class="form-wrap">
-    <h1>Welcome to AgriLease</h1>
-    <p class="sub">Sign in to manage your listings and bookings.</p>
+    <h1><?php echo t('login_title'); ?></h1>
+    <p class="sub"><?php echo t('login_subtitle'); ?></p>
     <?php if ($err): ?><div class="error-message"><?php echo $err; ?></div><?php endif; ?>
     <?php if (isset($_SESSION['registration_success'])): ?>
-      <div class="success-message">Registration successful. Please log in.</div>
+      <div class="success-message"><?php echo t('login_success_reg'); ?></div>
       <?php unset($_SESSION['registration_success']); endif; ?>
     <?php if (isset($_GET['logged_out'])): ?>
-      <div class="success-message">You have been logged out successfully.</div>
+      <div class="success-message"><?php echo t('login_success_logout'); ?></div>
     <?php endif; ?>
     <form method="post">
       <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
       <div class="form-group">
-        <label for="username">Username</label>
-        <input id="username" name="username" type="text" required placeholder="Enter username">
+        <label for="username"><?php echo t('login_username'); ?></label>
+        <input id="username" name="username" type="text" required placeholder="<?php echo t('enter_username'); ?>">
       </div>
       <div class="form-group">
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password" required placeholder="Enter password">
+        <label for="password"><?php echo t('login_password'); ?></label>
+        <input id="password" name="password" type="password" required placeholder="<?php echo t('enter_password'); ?>">
       </div>
-      <button class="btn" type="submit" name="login">Log in</button>
+      <button class="btn" type="submit" name="login"><?php echo t('login_btn'); ?></button>
     </form>
-    <p class="help">Don't have an account? <a href="register.php">Create one</a>.</p>
+    <p class="help"><?php echo t('login_no_account'); ?> <a href="register.php"><?php echo t('login_create'); ?></a>.</p>
   </div>
 </div>
 <?php include 'includes/footer.php'; ?>

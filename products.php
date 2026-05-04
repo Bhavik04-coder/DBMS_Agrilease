@@ -64,8 +64,8 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
   <div class="page-header">
     <div class="header-content">
       <div class="header-text">
-        <h1 class="page-title">Browse Equipment</h1>
-        <p class="page-subtitle">Find the perfect agricultural equipment for your needs</p>
+        <h1 class="page-title"><?php echo t('prod_title'); ?></h1>
+        <p class="page-subtitle"><?php echo t('prod_subtitle'); ?></p>
       </div>
     </div>
   </div>
@@ -75,13 +75,13 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
     <form method="get" class="filters-form">
       <div class="filters-grid">
         <div class="filter-group">
-          <input type="text" name="search" placeholder="Search equipment..." 
+          <input type="text" name="search" placeholder="<?php echo t('prod_search_ph'); ?>" 
                  value="<?php echo htmlspecialchars($search); ?>" class="filter-input">
         </div>
         
         <div class="filter-group">
           <select name="category" class="filter-select">
-            <option value="">All Categories</option>
+            <option value=""><?php echo t('prod_all_categories'); ?></option>
             <?php foreach ($categories as $cat): ?>
               <option value="<?php echo htmlspecialchars($cat); ?>" 
                       <?php echo $category === $cat ? 'selected' : ''; ?>>
@@ -92,15 +92,15 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
         </div>
         
         <div class="filter-group">
-          <input type="text" name="location" placeholder="Location..." 
+          <input type="text" name="location" placeholder="<?php echo t('prod_location_ph'); ?>" 
                  value="<?php echo htmlspecialchars($location); ?>" class="filter-input">
         </div>
         
         <div class="filter-group price-range">
-          <input type="number" name="min_price" placeholder="Min ₹" 
+          <input type="number" name="min_price" placeholder="<?php echo t('prod_min_price'); ?>" 
                  value="<?php echo $min_price > 0 ? $min_price : ''; ?>" class="filter-input price-input">
           <span class="price-separator">-</span>
-          <input type="number" name="max_price" placeholder="Max ₹" 
+          <input type="number" name="max_price" placeholder="<?php echo t('prod_max_price'); ?>" 
                  value="<?php echo $max_price > 0 ? $max_price : ''; ?>" class="filter-input price-input">
         </div>
         
@@ -109,9 +109,9 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
             <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
             </svg>
-            Search
+            <?php echo t('prod_search_btn'); ?>
           </button>
-          <a href="products.php" class="btn btn-outline">Clear</a>
+          <a href="products.php" class="btn btn-outline"><?php echo t('prod_clear_btn'); ?></a>
         </div>
       </div>
     </form>
@@ -119,7 +119,7 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
 
   <!-- Results -->
   <div class="results-header">
-    <h2>Available Equipment (<?php echo count($products); ?>)</h2>
+    <h2><?php echo t('prod_available'); ?> (<?php echo count($products); ?>)</h2>
     <?php if (count($products) === 0): ?>
       <p style="color: #6b7280; margin-top: 0.5rem;">
         <?php 
@@ -140,21 +140,21 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
           <path d="M21 21l-4.35-4.35"></path>
         </svg>
       </div>
-      <h3>No equipment found</h3>
-      <p>Try adjusting your search criteria or browse all available equipment</p>
-      <a class="btn btn-primary" href="products.php">View All Equipment</a>
+      <h3><?php echo t('prod_not_found'); ?></h3>
+      <p><?php echo t('prod_not_found_sub'); ?></p>
+      <a class="btn btn-primary" href="products.php"><?php echo t('prod_view_all'); ?></a>
     </div>
   <?php else: ?>
     <div class="products-grid">
       <?php foreach ($products as $p): ?>
         <div class="product-card">
           <div class="card-image">
-            <img src="<?php echo htmlspecialchars($p['image_path'] ?: 'assets/images/placeholder.jpg'); ?>" 
+            <img src="<?php echo htmlspecialchars($p['image_path'] ?: 'assets/images/Harvester2.jpg'); ?>" 
                  alt="<?php echo htmlspecialchars($p['title']); ?>" 
-                 onerror="this.src='assets/images/placeholder.jpg'">
+                 onerror="this.src='assets/images/Harvester2.jpg'">
             <div class="card-badge"><?php echo htmlspecialchars($p['category']); ?></div>
             <?php if ($p['is_own_product']): ?>
-              <div class="own-product-badge">Your Product</div>
+              <div class="own-product-badge"><?php echo t('prod_your_product'); ?></div>
             <?php endif; ?>
             <div class="card-overlay">
               <div class="overlay-actions">
@@ -163,13 +163,13 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
                     <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                     <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
                   </svg>
-                  View Details
+                  <?php echo t('prod_view_details'); ?>
                 </a>
                 <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm">
                   <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
                   </svg>
-                  Book Now
+                  <?php echo t('prod_book_now'); ?>
                 </a>
               </div>
             </div>
@@ -191,7 +191,7 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
                 <svg class="meta-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                 </svg>
-                <span class="location"><?php echo htmlspecialchars($p['location'] ?: 'Not specified'); ?></span>
+                <span class="location"><?php echo htmlspecialchars($p['location'] ?: t('prod_not_specified')); ?></span>
               </div>
               
               <div class="meta-item">
@@ -206,17 +206,17 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
             
             <div class="card-actions">
               <a class="btn btn-outline btn-sm" href="product_detail.php?id=<?php echo (int)$p['id']; ?>">
-                View Details
+                <?php echo t('prod_view_details'); ?>
               </a>
               <?php if ($p['is_own_product']): ?>
                 <a href="edit_product.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-success btn-sm">
                   <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                   </svg>
-                  Edit
+                  <?php echo t('dash_edit'); ?>
                 </a>
               <?php else: ?>
-                <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm">Book Now</a>
+                <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm"><?php echo t('prod_book_now'); ?></a>
               <?php endif; ?>
             </div>
           </div>

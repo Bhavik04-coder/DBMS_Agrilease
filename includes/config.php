@@ -30,4 +30,13 @@ try {
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+// Language initialization
+if (isset($_GET['lang']) && in_array($_GET['lang'], ['en', 'mr'])) {
+    $_SESSION['lang'] = $_GET['lang'];
+}
+if (empty($_SESSION['lang'])) {
+    $_SESSION['lang'] = 'en';
+}
+$GLOBALS['_lang'] = require __DIR__ . '/lang/' . $_SESSION['lang'] . '.php';
 ?>

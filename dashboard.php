@@ -59,15 +59,15 @@ foreach ($bookings as $b) {
   <div class="dashboard-hero">
     <div class="hero-content">
       <div class="welcome-section">
-        <h1 class="hero-title">Welcome back, <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?>!</h1>
-        <p class="hero-subtitle">Here's what's happening with your rentals today.</p>
+        <h1 class="hero-title"><?php echo t('dash_welcome'); ?> <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?>!</h1>
+        <p class="hero-subtitle"><?php echo t('dash_subtitle'); ?></p>
       </div>
       <div class="hero-actions">
         <a href="add_product.php" class="btn btn-primary btn-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          Add New Product
+          <?php echo t('dash_add_product'); ?>
         </a>
       </div>
     </div>
@@ -85,13 +85,13 @@ foreach ($bookings as $b) {
       </div>
       <div class="stat-content">
         <div class="stat-value"><?php echo count($myProducts); ?></div>
-        <div class="stat-label">My Listings</div>
+        <div class="stat-label"><?php echo t('dash_my_listings'); ?></div>
         <div class="stat-trend">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 10L8.5 4.5L5.5 7.5L2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M12 4H14V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>Active</span>
+          <span><?php echo t('dash_active'); ?></span>
         </div>
       </div>
     </div>
@@ -106,13 +106,13 @@ foreach ($bookings as $b) {
       </div>
       <div class="stat-content">
         <div class="stat-value"><?php echo count($receivedBookings); ?></div>
-        <div class="stat-label">Received Bookings</div>
+        <div class="stat-label"><?php echo t('dash_received_bookings'); ?></div>
         <div class="stat-trend">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 10L8.5 4.5L5.5 7.5L2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M12 4H14V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>Pending: <?php echo count(array_filter($receivedBookings, function($b) { return $b['status'] === 'pending'; })); ?></span>
+          <span><?php echo t('dash_pending'); ?>: <?php echo count(array_filter($receivedBookings, function($b) { return $b['status'] === 'pending'; })); ?></span>
         </div>
       </div>
     </div>
@@ -127,13 +127,13 @@ foreach ($bookings as $b) {
       </div>
       <div class="stat-content">
         <div class="stat-value"><?php echo count($otherProducts); ?></div>
-        <div class="stat-label">Available Products</div>
+        <div class="stat-label"><?php echo t('dash_available_products'); ?></div>
         <div class="stat-trend">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 10L8.5 4.5L5.5 7.5L2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M12 4H14V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>Browse all</span>
+          <span><?php echo t('dash_browse_all'); ?></span>
         </div>
       </div>
     </div>
@@ -157,12 +157,12 @@ foreach ($bookings as $b) {
           }
           echo number_format($totalEarnings, 2);
         ?></div>
-        <div class="stat-label">Total Earnings</div>
+        <div class="stat-label"><?php echo t('dash_total_earnings'); ?></div>
         <div class="stat-trend">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 12.6667L11.3333 9.33333M8 12.6667L4.66667 9.33333M8 12.6667V3.33333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>This month</span>
+          <span><?php echo t('dash_this_month'); ?></span>
         </div>
       </div>
     </div>
@@ -176,7 +176,7 @@ foreach ($bookings as $b) {
       <section class="dashboard-section">
         <div class="section-header">
           <div class="section-title">
-            <h2>My Products</h2>
+            <h2><?php echo t('dash_my_products'); ?></h2>
             <span class="badge badge-count"><?php echo count($myProducts); ?></span>
           </div>
           <div class="section-actions">
@@ -184,7 +184,7 @@ foreach ($bookings as $b) {
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
-              Add New
+              <?php echo t('dash_add_new'); ?>
             </a>
           </div>
         </div>
@@ -206,9 +206,9 @@ foreach ($bookings as $b) {
               <?php endif; ?>
               <div class="product-status">
                 <?php if (isset($p['availability']) && $p['availability'] === 'Available'): ?>
-                  <span class="badge badge-success">Available</span>
+                  <span class="badge badge-success"><?php echo t('status_available'); ?></span>
                 <?php elseif (isset($p['availability']) && $p['availability'] === 'Rented'): ?>
-                  <span class="badge badge-warning">Rented</span>
+                  <span class="badge badge-warning"><?php echo t('status_rented'); ?></span>
                 <?php endif; ?>
               </div>
               <div class="product-overlay">
@@ -219,13 +219,13 @@ foreach ($bookings as $b) {
                       <path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M8.99998 8C8.99998 8 9.74998 6.875 10.825 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    View
+                    <?php echo t('dash_view'); ?>
                   </a>
                   <a href="edit_product.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-light btn-sm">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M11.3333 1.99996C11.5084 1.82485 11.7163 1.686 11.945 1.59124C12.1737 1.49648 12.4189 1.44763 12.6667 1.44763C12.9144 1.44763 13.1596 1.49648 13.3883 1.59124C13.617 1.686 13.8249 1.82485 14 1.99996C14.1751 2.17507 14.314 2.38297 14.4087 2.61167C14.5035 2.84037 14.5523 3.08555 14.5523 3.33329C14.5523 3.58104 14.5035 3.82622 14.4087 4.05492C14.314 4.28362 14.1751 4.49152 14 4.66663L4.99996 13.6666L1.33329 14.6666L2.33329 11L11.3333 1.99996Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    Edit
+                    <?php echo t('dash_edit'); ?>
                   </a>
                 </div>
               </div>
@@ -245,14 +245,14 @@ foreach ($bookings as $b) {
               <?php endif; ?>
               
               <div class="product-footer">
-                <div class="price">₹<?php echo number_format((float)$p['price'], 2); ?>/day</div>
+                <div class="price">₹<?php echo number_format((float)$p['price'], 2); ?><?php echo t('dash_per_day'); ?></div>
                 <div class="meta">
-                  <small>Listed <?php echo date('M j, Y', strtotime($p['created_at'])); ?></small>
+                  <small><?php echo t('dash_listed'); ?> <?php echo date('M j, Y', strtotime($p['created_at'])); ?></small>
                 </div>
               </div>
               
               <div class="product-actions">
-                <form method="post" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this listing?');">
+                <form method="post" class="delete-form" onsubmit="return confirm('<?php echo t('dash_delete_confirm'); ?>');">
                   <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
                   <input type="hidden" name="product_id" value="<?php echo (int)$p['id']; ?>">
                   <button class="btn btn-danger btn-sm btn-icon" type="submit" name="delete" value="1">
@@ -260,7 +260,7 @@ foreach ($bookings as $b) {
                       <path d="M2 4H3.33333H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M5.33325 4V2.66667C5.33325 2.31305 5.47373 1.97391 5.72378 1.72386C5.97383 1.47381 6.31296 1.33333 6.66659 1.33333H9.33325C9.68687 1.33333 10.026 1.47381 10.2761 1.72386C10.5261 1.97391 10.6666 2.31305 10.6666 2.66667V4M12.6666 4V13.3333C12.6666 13.687 12.5261 14.0261 12.2761 14.2761C12.026 14.5262 11.6869 14.6667 11.3333 14.6667H4.66659C4.31296 14.6667 3.97382 14.5262 3.72378 14.2761C3.47373 14.0261 3.33325 13.687 3.33325 13.3333V4H12.6666Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    Delete
+                    <?php echo t('dash_delete'); ?>
                   </button>
                 </form>
               </div>
@@ -275,9 +275,9 @@ foreach ($bookings as $b) {
                 <path d="M9 12H15M9 16H15M5 20H19C20.1046 20 21 19.1046 21 18V6C21 4.89543 20.1046 4 19 4H5C3.89543 4 3 4.89543 3 6V18C3 19.1046 3.89543 20 5 20Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
             </div>
-            <h3>No products listed yet</h3>
-            <p>Start earning by listing your first product for rent.</p>
-            <a href="add_product.php" class="btn btn-primary">Add Your First Product</a>
+            <h3><?php echo t('dash_no_products'); ?></h3>
+            <p><?php echo t('dash_no_products_sub'); ?></p>
+            <a href="add_product.php" class="btn btn-primary"><?php echo t('dash_add_first'); ?></a>
           </div>
         <?php endif; ?>
       </section>
@@ -286,11 +286,11 @@ foreach ($bookings as $b) {
       <section class="dashboard-section">
         <div class="section-header">
           <div class="section-title">
-            <h2>Browse Products</h2>
+            <h2><?php echo t('dash_browse_products'); ?></h2>
             <span class="badge badge-count"><?php echo count($otherProducts); ?></span>
           </div>
           <div class="section-actions">
-            <a href="products.php" class="btn btn-outline btn-sm">View All</a>
+            <a href="products.php" class="btn btn-outline btn-sm"><?php echo t('dash_view_all'); ?></a>
           </div>
         </div>
         
@@ -311,13 +311,13 @@ foreach ($bookings as $b) {
               <?php endif; ?>
               <div class="product-overlay">
                 <div class="overlay-actions">
-                  <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-light btn-sm">View Details</a>
+                  <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-light btn-sm"><?php echo t('dash_view_details'); ?></a>
                   <a href="product_detail.php?id=<?php echo (int)$p['id']; ?>" class="btn btn-primary btn-sm btn-icon">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M2.66675 4H13.3334V13.3333C13.3334 13.687 13.1929 14.0261 12.9429 14.2761C12.6928 14.5262 12.3537 14.6667 12.0001 14.6667H4.00008C3.64646 14.6667 3.30732 14.5262 3.05727 14.2761C2.80722 14.0261 2.66675 13.687 2.66675 13.3333V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M10.6667 2.66667H5.33341C4.97979 2.66667 4.64065 2.80714 4.3906 3.05719C4.14055 3.30724 4.00008 3.64638 4.00008 4V4H12.0001V4C12.0001 3.64638 11.8596 3.30724 11.6096 3.05719C11.3595 2.80714 11.0204 2.66667 10.6667 2.66667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    Book Now
+                    <?php echo t('dash_book_now'); ?>
                   </a>
                 </div>
               </div>
@@ -337,7 +337,7 @@ foreach ($bookings as $b) {
               <?php endif; ?>
               
               <div class="product-footer">
-                <div class="price">₹<?php echo number_format((float)$p['price'], 2); ?>/day</div>
+                <div class="price">₹<?php echo number_format((float)$p['price'], 2); ?><?php echo t('dash_per_day'); ?></div>
                 <div class="meta">
                   <span class="owner">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -359,8 +359,8 @@ foreach ($bookings as $b) {
                 <path d="M3 10H21M7 15H8M12 15H13M6 19H18C19.6569 19 21 17.6569 21 16V8C21 6.34315 19.6569 5 18 5H6C4.34315 5 3 6.34315 3 8V16C3 17.6569 4.34315 19 6 19Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
             </div>
-            <h3>No products available</h3>
-            <p>Check back later for new rental listings.</p>
+            <h3><?php echo t('dash_no_avail'); ?></h3>
+            <p><?php echo t('dash_no_avail_sub'); ?></p>
           </div>
         <?php endif; ?>
       </section>
@@ -372,7 +372,7 @@ foreach ($bookings as $b) {
       <section class="dashboard-section">
         <div class="section-header">
           <div class="section-title">
-            <h2>Received Bookings</h2>
+            <h2><?php echo t('dash_received_bk'); ?></h2>
             <span class="badge badge-count"><?php echo count($receivedBookings); ?></span>
           </div>
         </div>
@@ -382,7 +382,7 @@ foreach ($bookings as $b) {
           <?php foreach ($receivedBookings as $b): ?>
           <div class="card booking-card">
             <div class="booking-header">
-              <div class="booking-id">Booking #<?php echo (int)$b['id']; ?></div>
+              <div class="booking-id"><?php echo t('dash_booking_id'); ?><?php echo (int)$b['id']; ?></div>
               <span class="badge badge-<?php 
                 echo $b['status'] === 'confirmed' ? 'success' : 
                      ($b['status'] === 'pending' ? 'warning' : 'secondary'); 
@@ -415,17 +415,17 @@ foreach ($bookings as $b) {
                 <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M8 4V8L10.6667 9.33333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Received <?php echo date('M j, Y', strtotime($b['created_at'])); ?>
+              <?php echo t('dash_received'); ?> <?php echo date('M j, Y', strtotime($b['created_at'])); ?>
             </div>
             
             <div class="booking-actions">
-              <a href="receipt.php?id=<?php echo (int)$b['id']; ?>" class="btn btn-outline btn-sm">View Details</a>
+              <a href="receipt.php?id=<?php echo (int)$b['id']; ?>" class="btn btn-outline btn-sm"><?php echo t('dash_view_details'); ?></a>
               <?php if ($b['status'] === 'pending'): ?>
                 <form method="post" action="update_booking.php" class="booking-action-form">
                   <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
                   <input type="hidden" name="booking_id" value="<?php echo (int)$b['id']; ?>">
                   <input type="hidden" name="status" value="confirmed">
-                  <button class="btn btn-success btn-sm" type="submit">Confirm</button>
+                  <button class="btn btn-success btn-sm" type="submit"><?php echo t('dash_confirm'); ?></button>
                 </form>
               <?php endif; ?>
             </div>
@@ -439,8 +439,8 @@ foreach ($bookings as $b) {
                 <path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
             </div>
-            <h4>No bookings yet</h4>
-            <p>When someone books your products, they'll appear here.</p>
+            <h4><?php echo t('dash_no_bookings'); ?></h4>
+            <p><?php echo t('dash_no_bookings_sub'); ?></p>
           </div>
         <?php endif; ?>
       </section>
@@ -448,7 +448,7 @@ foreach ($bookings as $b) {
       <!-- Quick Actions -->
       <section class="dashboard-section">
         <div class="section-header">
-          <h2>Quick Actions</h2>
+          <h2><?php echo t('dash_quick_actions'); ?></h2>
         </div>
         <div class="quick-actions">
           <a href="products.php" class="quick-action">
@@ -458,8 +458,8 @@ foreach ($bookings as $b) {
               </svg>
             </div>
             <div class="quick-action-content">
-              <h4>Browse All Products</h4>
-              <p>Explore all available rentals</p>
+              <h4><?php echo t('dash_browse_all_prod'); ?></h4>
+              <p><?php echo t('dash_explore'); ?></p>
             </div>
           </a>
           
@@ -470,8 +470,8 @@ foreach ($bookings as $b) {
               </svg>
             </div>
             <div class="quick-action-content">
-              <h4>My Bookings</h4>
-              <p>View all your bookings</p>
+              <h4><?php echo t('dash_my_bk'); ?></h4>
+              <p><?php echo t('dash_view_bk'); ?></p>
             </div>
           </a>
           
@@ -483,8 +483,8 @@ foreach ($bookings as $b) {
               </svg>
             </div>
             <div class="quick-action-content">
-              <h4>Profile Settings</h4>
-              <p>Update your account details</p>
+              <h4><?php echo t('dash_profile_settings'); ?></h4>
+              <p><?php echo t('dash_update_account'); ?></p>
             </div>
           </a>
         </div>

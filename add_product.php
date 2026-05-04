@@ -19,15 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Validate required fields
         if (empty($title)) {
-            $error = 'Product title is required.';
+            $error = t('add_err_title');
         } elseif ($price <= 0) {
-            $error = 'Please enter a valid price greater than zero.';
+            $error = t('add_err_price');
         } elseif (empty($location)) {
-            $error = 'Location is required.';
+            $error = t('add_err_location');
         } elseif ($lat !== null && ($lat < -90 || $lat > 90)) {
-            $error = 'Invalid latitude value. Must be between -90 and 90.';
+            $error = t('add_err_lat');
         } elseif ($lng !== null && ($lng < -180 || $lng > 180)) {
-            $error = 'Invalid longitude value. Must be between -180 and 180.';
+            $error = t('add_err_lng');
         }
 
         // handle image upload
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$error) {
             $stmt = $pdo->prepare("INSERT INTO products (title, description, category, price, image_path, location, lat, lng, listed_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
             $stmt->execute([$title, $description, $category, $price, $image_path, $location, $lat, $lng, $_SESSION['user_id']]);
-            $success = 'Product added successfully.';
+            $success = t('add_success');
         }
     }
 }
@@ -54,8 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container page">
   <div class="form-container">
     <div class="form-header">
-      <h1 class="form-title">Add New Product</h1>
-      <p class="form-subtitle">List your item for rental</p>
+      <h1 class="form-title"><?php echo t('add_title'); ?></h1>
+      <p class="form-subtitle"><?php echo t('add_subtitle'); ?></p>
     </div>
     
     <div class="form-content">
@@ -86,9 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M20 7h-9M14 17H5M17 12H3" stroke-width="2" stroke-linecap="round"/>
               </svg>
-              Product Title *
+              <?php echo t('add_prod_title'); ?>
             </label>
-            <input id="title" name="title" class="form-input" placeholder="e.g., John Deere 5050D Tractor" required>
+            <input id="title" name="title" class="form-input" placeholder="<?php echo t('add_prod_title_ph'); ?>" required>
           </div>
         </div>
 
@@ -101,19 +101,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <rect x="14" y="14" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <rect x="3" y="14" width="7" height="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Category *
+              <?php echo t('add_category'); ?>
             </label>
             <div class="select-wrapper">
               <select id="category" name="category" class="form-input" required>
-                <option value="">Select category</option>
-                <option value="Tractors">Tractors</option>
-                <option value="Harvesters">Harvesters</option>
-                <option value="Tillers">Tillers & Cultivators</option>
-                <option value="Seeders">Seeders & Planters</option>
-                <option value="Sprayers">Sprayers</option>
-                <option value="Irrigation">Irrigation Equipment</option>
-                <option value="Trailers">Trailers & Trolleys</option>
-                <option value="Other">Other Equipment</option>
+                <option value=""><?php echo t('add_select_cat'); ?></option>
+                <option value="Tractors"><?php echo t('cat_tractors'); ?></option>
+                <option value="Harvesters"><?php echo t('cat_harvesters'); ?></option>
+                <option value="Tillers"><?php echo t('cat_tillers'); ?></option>
+                <option value="Seeders"><?php echo t('cat_seeders'); ?></option>
+                <option value="Sprayers"><?php echo t('cat_sprayers'); ?></option>
+                <option value="Irrigation"><?php echo t('cat_irrigation'); ?></option>
+                <option value="Trailers"><?php echo t('cat_trailers'); ?></option>
+                <option value="Other"><?php echo t('cat_other'); ?></option>
               </select>
               <svg class="select-arrow" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M8 11L3 6h10l-5 5z"/>
@@ -126,12 +126,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Daily Rental Price *
+              <?php echo t('add_price'); ?>
             </label>
             <div class="price-input-wrapper">
               <span class="price-prefix">₹</span>
-              <input id="price" name="price" type="number" step="0.01" min="0" class="form-input price-input" placeholder="1500.00" required>
-              <span class="price-suffix">/day</span>
+              <input id="price" name="price" type="number" step="0.01" min="0" class="form-input price-input" placeholder="<?php echo t('add_price_ph'); ?>" required>
+              <span class="price-suffix">/<?php echo ($_SESSION['lang'] ?? 'en') === 'mr' ? 'दिवस' : 'day'; ?></span>
             </div>
           </div>
         </div>
@@ -142,9 +142,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke-width="2"/>
               <circle cx="12" cy="10" r="3" stroke-width="2"/>
             </svg>
-            Location *
+            <?php echo t('add_location'); ?>
           </label>
-          <input id="location" name="location" class="form-input" placeholder="e.g., Ludhiana, Punjab" required>
+          <input id="location" name="location" class="form-input" placeholder="<?php echo t('add_location_ph'); ?>" required>
         </div>
 
         <div class="location-section">
@@ -154,24 +154,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" stroke-width="2"/>
                 <circle cx="12" cy="10" r="3" stroke-width="2"/>
               </svg>
-              GPS Coordinates (Optional)
+              <?php echo t('add_gps'); ?>
             </label>
             <button type="button" id="get-location" class="location-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <circle cx="12" cy="12" r="10" stroke-width="2"/>
                 <path d="M12 16v-4M12 8h.01" stroke-width="2" stroke-linecap="round"/>
               </svg>
-              Auto-Detect Location
+              <?php echo t('add_auto_detect'); ?>
             </button>
           </div>
           
           <div class="form-grid">
             <div class="form-group">
-              <label for="lat" class="form-label-small">Latitude</label>
+              <label for="lat" class="form-label-small"><?php echo t('add_latitude'); ?></label>
               <input id="lat" name="lat" class="form-input" placeholder="28.6139" readonly>
             </div>
             <div class="form-group">
-              <label for="lng" class="form-label-small">Longitude</label>
+              <label for="lng" class="form-label-small"><?php echo t('add_longitude'); ?></label>
               <input id="lng" name="lng" class="form-input" placeholder="77.2090" readonly>
             </div>
           </div>
@@ -187,10 +187,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke-width="2"/>
               <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            Description
+            <?php echo t('add_description'); ?>
           </label>
-          <textarea id="description" name="description" rows="5" class="form-textarea" placeholder="Describe your equipment: condition, features, specifications, usage instructions, etc."></textarea>
-          <p class="field-help">Provide detailed information to help renters understand your equipment better.</p>
+          <textarea id="description" name="description" rows="5" class="form-textarea" placeholder="<?php echo t('add_desc_ph'); ?>"></textarea>
+          <p class="field-help"><?php echo t('add_desc_help'); ?></p>
         </div>
 
         <div class="form-group">
@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <circle cx="8.5" cy="8.5" r="1.5" stroke-width="2"/>
               <path d="M21 15l-5-5L5 21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Product Image
+            <?php echo t('add_image'); ?>
           </label>
           <div class="file-upload-wrapper" id="file-upload-wrapper">
             <input id="image" name="image" type="file" accept="image/*" class="file-input">
@@ -210,8 +210,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <span class="upload-text">Click to upload or drag and drop</span>
-              <span class="upload-subtext">PNG, JPG or JPEG (Max 5MB)</span>
+              <span class="upload-text"><?php echo t('add_upload_text'); ?></span>
+              <span class="upload-subtext"><?php echo t('add_upload_sub'); ?></span>
             </label>
             <div id="image-preview" class="image-preview" style="display: none;">
               <img id="preview-img" src="" alt="Preview">
@@ -229,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <svg class="btn-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
-            Save Product
+            <?php echo t('add_save_btn'); ?>
           </button>
         </div>
       </form>
@@ -654,6 +654,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </style>
 
 <script>
+var _lang = {
+  gettingLoc:   <?php echo json_encode(t('add_getting_loc')); ?>,
+  locCaptured:  <?php echo json_encode(t('add_loc_captured')); ?>,
+  tryAgain:     <?php echo json_encode(t('add_try_again')); ?>,
+  requesting:   <?php echo json_encode(t('add_loc_requesting')); ?>,
+  locSuccess:   <?php echo json_encode(t('add_loc_success')); ?>,
+  locDenied:    <?php echo json_encode(t('add_loc_denied')); ?>,
+  locUnavail:   <?php echo json_encode(t('add_loc_unavail')); ?>,
+  locTimeout:   <?php echo json_encode(t('add_loc_timeout')); ?>,
+  locUnknown:   <?php echo json_encode(t('add_loc_unknown')); ?>,
+  locUnsupported: <?php echo json_encode(t('add_loc_unsupported')); ?>
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   // Image preview functionality
   const imageInput = document.getElementById('image');
@@ -700,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   getLocationBtn.addEventListener('click', function() {
     if (!navigator.geolocation) {
-      showStatus('Geolocation is not supported by this browser.', 'error');
+      showStatus(_lang.locUnsupported, 'error');
       return;
     }
 
@@ -711,9 +724,9 @@ document.addEventListener('DOMContentLoaded', function() {
         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
         <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      Getting Location...
+      ${_lang.gettingLoc}
     `;
-    showStatus('Requesting your location...', 'loading');
+    showStatus(_lang.requesting, 'loading');
 
     const options = {
       enableHighAccuracy: true,
@@ -732,7 +745,7 @@ document.addEventListener('DOMContentLoaded', function() {
         lngInput.value = longitude.toFixed(7);
 
         // Show success message
-        showStatus(`Location captured successfully! (Accuracy: ${Math.round(accuracy)}m)`, 'success');
+        showStatus(_lang.locSuccess.replace('{acc}', Math.round(accuracy)), 'success');
 
         // Reset button
         getLocationBtn.disabled = false;
@@ -740,27 +753,27 @@ document.addEventListener('DOMContentLoaded', function() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M20 6L9 17l-5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Location Captured
+          ${_lang.locCaptured}
         `;
 
         // Hide status after 3 seconds
         setTimeout(hideStatus, 3000);
       },
       function(error) {
-        let errorMessage = 'Unable to get your location. ';
+        let errorMessage = '';
         
         switch(error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage += 'Location access denied by user.';
+            errorMessage = _lang.locDenied;
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage += 'Location information unavailable.';
+            errorMessage = _lang.locUnavail;
             break;
           case error.TIMEOUT:
-            errorMessage += 'Location request timed out.';
+            errorMessage = _lang.locTimeout;
             break;
           default:
-            errorMessage += 'An unknown error occurred.';
+            errorMessage = _lang.locUnknown;
             break;
         }
 
@@ -773,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <circle cx="12" cy="12" r="10" stroke-width="2"/>
             <path d="M12 16v-4M12 8h.01" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          Try Again
+          ${_lang.tryAgain}
         `;
       },
       options

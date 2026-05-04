@@ -200,9 +200,9 @@ $made_bookings = $made_stmt->fetchAll();
         <?php foreach ($received_bookings as $booking): ?>
           <div class="booking-card">
             <div class="booking-image">
-              <img src="<?php echo htmlspecialchars($booking['image_path'] ?: 'assets/images/placeholder.jpg'); ?>" 
+              <img src="<?php echo htmlspecialchars($booking['image_path'] ?: 'assets/images/Harvester2.jpg'); ?>" 
                    alt="<?php echo htmlspecialchars($booking['product_title']); ?>"
-                   onerror="this.src='assets/images/placeholder.jpg'">
+                   onerror="this.src='assets/images/Harvester2.jpg'">
               <div class="booking-status status-<?php echo $booking['status']; ?>">
                 <?php echo ucfirst($booking['status']); ?>
               </div>
@@ -337,9 +337,9 @@ $made_bookings = $made_stmt->fetchAll();
         <?php foreach ($made_bookings as $booking): ?>
           <div class="booking-card">
             <div class="booking-image">
-              <img src="<?php echo htmlspecialchars($booking['image_path'] ?: 'assets/images/placeholder.jpg'); ?>" 
+              <img src="<?php echo htmlspecialchars($booking['image_path'] ?: 'assets/images/Harvester2.jpg'); ?>" 
                    alt="<?php echo htmlspecialchars($booking['product_title']); ?>"
-                   onerror="this.src='assets/images/placeholder.jpg'">
+                   onerror="this.src='assets/images/Harvester2.jpg'">
               <div class="booking-status status-<?php echo $booking['status']; ?>">
                 <?php echo ucfirst($booking['status']); ?>
               </div>
