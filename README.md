@@ -1,294 +1,375 @@
 # AgriLease - Agricultural Equipment Rental Platform
 
-A comprehensive web-based platform for renting and listing agricultural equipment with integrated payment system.
+## 📋 Project Overview
 
-## 🚀 Quick Start
+AgriLease is a comprehensive web-based platform designed to facilitate the rental of agricultural equipment between farmers and equipment owners. The platform enables farmers to list their equipment for rent and allows other farmers to book equipment they need, creating a sharing economy for agricultural machinery.
 
-### Installation (3 Steps)
+## 🎯 Key Features
 
-**Step 1: Import Database**
-```bash
-mysql -u root -p < agrilease_complete.sql
-```
-Or use phpMyAdmin to import `agrilease_complete.sql`
+### User Management
+- **User Registration & Authentication**: Secure login/logout system with password hashing
+- **Profile Management**: Users can update personal information, contact details, and location
+- **Role-based Access**: Differentiation between equipment owners and renters
 
-**Step 2: Configure Database**
-Edit `includes/config.php` if needed:
-```php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'agrilease_v2');
-```
+### Equipment Management
+- **Product Listings**: Add, edit, and delete agricultural equipment listings
+- **Category System**: Organized equipment categories (Tractors, Harvesters, Tillers, Seeders, Sprayers, Irrigation, Trailers)
+- **Image Upload**: Support for equipment photos
+- **GPS Location**: Auto-detect and manual location entry for equipment
+- **Availability Status**: Real-time tracking of equipment availability
 
-**Step 3: Access Application**
-```
-http://localhost/agrilease
-```
-
-## ✨ Features
-
-### Core Features
-- 🔐 User Authentication (Login/Register)
-- 📦 Product Listing & Management
-- 🔍 Search & Filter Equipment
-- 📍 Location-based Search (GPS)
-- 📅 Booking System
-- 💰 Split Payment System (30% Deposit + 70% Final)
-- 🧾 Receipt Generation
-- 🔔 Notifications
-- ⭐ Reviews & Ratings
-- 👤 User Profiles
+### Booking System
+- **Date-based Booking**: Select start and end dates for equipment rental
+- **Booking Validation**: Prevents double-booking and date conflicts
+- **Booking Status**: Pending, Confirmed, Completed, Cancelled states
+- **Booking History**: Track all past and current bookings
 
 ### Payment System
-- **Split Payments**: 30% deposit to confirm, 70% final payment
-- **Payment Tracking**: Complete payment history
-- **Owner Verification**: Owners verify received payments
-- **Multiple Methods**: Cash, UPI, Bank Transfer, Card, Cheque
-- **Payment Gateway Ready**: Razorpay/Stripe integration template
-- **Automatic Notifications**: Both parties notified of payment events
-- **Transaction IDs**: Track all payment references
+- **Split Payment Model**: 30% deposit + 70% final payment structure
+- **Multiple Payment Methods**: Cash, Bank Transfer, UPI, Card, Cheque
+- **Payment Tracking**: Complete payment history and status
+- **Payment Verification**: Owner verification of received payments
+- **Transaction Records**: Transaction IDs and reference numbers
+
+### Notification System
+- **Real-time Notifications**: Alerts for bookings, payments, and status changes
+- **Notification Types**: Booking, Payment, System notifications
+- **Read/Unread Status**: Track notification status
+- **Notification Center**: Centralized notification management
+
+### Search & Filter
+- **Advanced Search**: Search by equipment name, description
+- **Category Filter**: Filter by equipment category
+- **Location Filter**: Find equipment by location
+- **Price Range Filter**: Filter by minimum and maximum price
+
+### Dashboard
+- **Statistics Overview**: Total listings, bookings, earnings
+- **My Products**: Manage personal equipment listings
+- **Browse Products**: Explore available equipment
+- **Received Bookings**: View and manage booking requests
+- **Quick Actions**: Fast access to common tasks
+
+## 🛠️ Technology Stack
+
+### Frontend
+- **HTML5**: Semantic markup
+- **CSS3**: Modern styling with custom properties, gradients, animations
+- **JavaScript**: Interactive features, form validation, geolocation
+- **SVG Icons**: Scalable vector graphics for UI elements
+
+### Backend
+- **PHP 7.4+**: Server-side scripting
+- **MySQL 5.7+**: Relational database management
+- **PDO**: Database abstraction layer for secure queries
+
+### Security
+- **CSRF Protection**: Token-based form security
+- **Password Hashing**: bcrypt algorithm
+- **SQL Injection Prevention**: Prepared statements
+- **XSS Protection**: Input sanitization and output escaping
+- **Session Management**: Secure session handling
 
 ## 📁 Project Structure
 
 ```
 agrilease/
 ├── assets/
-│   ├── css/
-│   │   └── style.css
-│   └── images/
+│   ├── css/              # Stylesheets
+│   └── images/           # Image assets and uploads
 ├── includes/
 │   ├── auth.php          # Authentication middleware
 │   ├── config.php        # Database configuration
 │   ├── functions.php     # Helper functions
-│   ├── header.php        # Header template
-│   └── footer.php        # Footer template
+│   ├── header.php        # Common header
+│   ├── footer.php        # Common footer
+│   └── init.php          # Initialization script
 ├── index.php             # Login page
-├── register.php          # Registration page
+├── register.php          # User registration
 ├── dashboard.php         # Main dashboard
-├── products.php          # Browse products
-├── product_detail.php    # Product details
-├── add_product.php       # Add new product
-├── edit_product.php      # Edit product
-├── my_products.php       # User's products
-├── book.php              # Booking handler
+├── products.php          # Browse equipment
+├── product_detail.php    # Equipment details
+├── add_product.php       # Add new equipment
+├── edit_product.php      # Edit equipment
+├── my_products.php       # User's equipment listings
+├── book.php              # Booking processor
+├── booking_confirmed.php # Booking confirmation
 ├── my_bookings.php       # User's bookings
-├── manage_bookings.php   # Manage bookings (owner)
+├── manage_bookings.php   # Manage received bookings
 ├── payment.php           # Payment management
-├── payment_gateway.php   # Payment gateway integration
+├── payment_gateway.php   # Payment processing
 ├── receipt.php           # Booking receipt
+├── notifications.php     # Notification center
 ├── profile.php           # User profile
-├── notifications.php     # Notifications
+├── logout.php            # Logout handler
 └── agrilease_complete.sql # Database schema
 ```
 
 ## 🗄️ Database Schema
 
-### Main Tables
-- **users** - User accounts
-- **products** - Equipment listings
-- **bookings** - Rental bookings with payment tracking
-- **payments** - Detailed payment transactions
-- **receipts** - Booking receipts/invoices
-- **notifications** - User notifications
-- **reviews** - Product and user reviews
+### Tables
 
-### Key Features
-- Automatic payment calculation (30/70 split)
-- Triggers for payment status updates
-- Views for booking and payment summaries
-- Stored procedures for common queries
+#### users
+- User account information
+- Personal details (name, email, phone)
+- Location data (address, GPS coordinates)
+- Authentication credentials
 
-## 💳 Payment System
+#### products
+- Equipment listings
+- Product details (title, description, category)
+- Pricing information
+- Location and GPS coordinates
+- Availability status
+- Image path
 
-### How It Works
+#### bookings
+- Rental bookings
+- Date range (start_date, end_date)
+- Booking status
+- Price calculations
+- Renter and owner information
+- GPS coordinates for both parties
 
-**For Renters:**
-1. Book equipment
-2. System calculates deposit (30%) and final amount (70%)
-3. Go to "Manage Payments"
-4. Record deposit payment
-5. Wait for owner verification
-6. Record final payment
-7. Complete!
+#### payments
+- Payment records
+- Payment type (deposit/final)
+- Amount and status
+- Payment method
+- Transaction details
+- Verification information
 
-**For Owners:**
-1. Receive booking notification
-2. Renter records payment
-3. Get notification
-4. Verify payment received
-5. Renter gets confirmation
+#### receipts
+- Booking receipts
+- Payment status
+- Receipt generation date
 
-### Payment Methods
-- Manual: Cash, UPI, Bank Transfer, Card, Cheque
-- Online: Razorpay, Stripe (template ready)
+#### notifications
+- User notifications
+- Notification type and content
+- Read/unread status
+- Timestamps
 
-### Customization
+#### reviews
+- Equipment reviews and ratings
+- Review content
+- Rating (1-5 stars)
 
-**Change Payment Split:**
-Edit `agrilease_complete.sql` (line ~260):
-```sql
-SET NEW.deposit_amount = NEW.total_price * 0.30;  -- Change to 0.50 for 50%
-SET NEW.final_amount = NEW.total_price * 0.70;    -- Change to 0.50 for 50%
-```
+### Database Views
+- `booking_details_with_receipt`: Complete booking information with receipt data
+- `payment_summary`: Aggregated payment information
+- `product_statistics`: Equipment usage statistics
+
+### Stored Procedures
+- `calculate_booking_duration`: Calculate rental duration
+- `get_user_booking_history`: Retrieve user's booking history
+
+### Triggers
+- `before_booking_insert`: Validate booking before insertion
+- `after_payment_completed`: Update booking status after payment
+- `after_booking_confirmed`: Send notifications on booking confirmation
+
+## 🚀 Installation
+
+### Prerequisites
+- PHP 7.4 or higher
+- MySQL 5.7 or higher
+- Apache/Nginx web server
+- Web browser (Chrome, Firefox, Safari, Edge)
+
+### Setup Steps
+
+1. **Clone or Download the Project**
+   ```bash
+   git clone <repository-url>
+   cd agrilease
+   ```
+
+2. **Database Setup**
+   - Create a MySQL database
+   - Import the SQL file:
+   ```bash
+   mysql -u username -p database_name < agrilease_complete.sql
+   ```
+
+3. **Configure Database Connection**
+   - Edit `includes/config.php`
+   - Update database credentials:
+   ```php
+   $host = 'localhost';
+   $dbname = 'agrilease_v2';
+   $username = 'your_username';
+   $password = 'your_password';
+   ```
+
+4. **Set File Permissions**
+   ```bash
+   chmod 755 assets/images/
+   chmod 644 includes/config.php
+   ```
+
+5. **Configure Web Server**
+   - Point document root to project directory
+   - Enable mod_rewrite (Apache)
+   - Restart web server
+
+6. **Access the Application**
+   - Open browser and navigate to: `http://localhost/agrilease`
+   - Register a new account or use demo credentials
+
+## 👤 Default Users
+
+After importing the database, you can use these demo accounts:
+
+- **User 1**: 
+  - Username: `farmer1`
+  - Password: `password123`
+  
+- **User 2**: 
+  - Username: `farmer2`
+  - Password: `password123`
 
 ## 🔧 Configuration
 
-### Payment Gateway Integration
+### File Upload Settings
+- Maximum file size: 5MB
+- Allowed formats: JPG, JPEG, PNG
+- Upload directory: `assets/images/`
 
-**Razorpay:**
-1. Get API keys from https://razorpay.com
-2. Edit `payment_gateway.php`:
-```php
-define('RAZORPAY_KEY_ID', 'your_key_id');
-define('RAZORPAY_KEY_SECRET', 'your_key_secret');
-```
-3. Uncomment integration code
+### Session Settings
+- Session timeout: 24 hours
+- Secure cookies enabled
+- CSRF token validation
 
-**Stripe:**
-1. Install: `composer require stripe/stripe-php`
-2. Add API keys
-3. Update payment_gateway.php
+### Payment Settings
+- Deposit percentage: 30%
+- Final payment percentage: 70%
+- Supported payment methods: Cash, Bank Transfer, UPI, Card, Cheque
 
-## 📱 Pages Overview
+## 📱 Features in Detail
 
-### Public Pages
-- `/index.php` - Login
-- `/register.php` - Registration
+### Equipment Listing
+1. Navigate to "Add Product"
+2. Fill in equipment details
+3. Upload equipment photo
+4. Set daily rental price
+5. Add location (manual or GPS auto-detect)
+6. Submit listing
 
-### User Pages
-- `/dashboard.php` - Main dashboard
-- `/products.php` - Browse equipment
-- `/product_detail.php?id=X` - Product details
-- `/my_bookings.php` - User's bookings
-- `/profile.php` - User profile
+### Booking Process
+1. Browse available equipment
+2. Select equipment
+3. Choose rental dates
+4. Review booking details
+5. Submit booking request
+6. Make deposit payment (30%)
+7. Complete final payment (70%)
 
-### Owner Pages
-- `/add_product.php` - List new equipment
-- `/edit_product.php?id=X` - Edit listing
-- `/my_products.php` - Manage listings
-- `/manage_bookings.php` - Handle booking requests
+### Payment Flow
+1. Renter makes payment
+2. Payment marked as "Pending"
+3. Owner verifies payment
+4. Payment status updated to "Completed"
+5. Booking status updated accordingly
 
-### Payment Pages
-- `/payment.php?id=X` - Payment management
-- `/payment_gateway.php` - Gateway integration
-- `/receipt.php?id=X` - Booking receipt
+## 🎨 UI/UX Features
+
+- **Responsive Design**: Mobile-friendly interface
+- **Modern Aesthetics**: Gradient backgrounds, smooth animations
+- **Intuitive Navigation**: Clear menu structure
+- **Visual Feedback**: Loading states, success/error messages
+- **Card-based Layout**: Clean, organized content presentation
+- **Icon System**: SVG icons for better scalability
 
 ## 🔒 Security Features
 
-- ✅ CSRF token protection
-- ✅ SQL injection prevention (prepared statements)
-- ✅ XSS protection (output sanitization)
-- ✅ Password hashing (bcrypt)
-- ✅ Session management
-- ✅ User authentication middleware
-- ✅ Owner verification for payments
+- CSRF token protection on all forms
+- Password hashing with bcrypt
+- SQL injection prevention via prepared statements
+- XSS protection through input sanitization
+- Session hijacking prevention
+- Secure file upload validation
 
-## 🎨 Frontend Features
+## 📊 Reporting & Analytics
 
-- Responsive design (mobile-friendly)
-- Modern UI with gradient themes
-- Interactive forms with validation
-- Image upload with preview
-- GPS location detection
-- Real-time notifications
-- Smooth animations and transitions
-
-## 🛠️ Technologies Used
-
-- **Backend**: PHP 7.4+
-- **Database**: MySQL 5.7+
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Maps**: Leaflet.js
-- **Icons**: SVG icons
-- **Styling**: Custom CSS with gradients
-
-## 📊 Key Features Explained
-
-### Booking System
-- Date range selection
-- Automatic price calculation
-- Overlap prevention
-- Status tracking (pending, confirmed, completed, cancelled)
-
-### Payment Tracking
-- Split payment support
+- Total equipment listings
+- Active bookings count
+- Revenue tracking
+- Booking history
 - Payment history
-- Owner verification
-- Transaction ID tracking
-- Multiple payment methods
+- Equipment utilization statistics
 
-### Notifications
-- Booking requests
-- Payment updates
-- Status changes
-- Real-time updates
+## 🌐 Browser Support
 
-### Location Features
-- GPS coordinates
-- Distance calculation
-- Map visualization
-- Location-based search
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+- Opera (latest)
 
-## 🐛 Troubleshooting
+## 📝 API Endpoints (Internal)
 
-**Database Connection Error:**
-- Check `includes/config.php` settings
-- Verify MySQL is running
-- Check database name and credentials
+All endpoints are PHP-based and handle both GET and POST requests:
 
-**Payments Not Showing:**
-- Verify `agrilease_complete.sql` was imported
-- Check if `payments` table exists
-- Clear browser cache
+- `/index.php` - Login
+- `/register.php` - Registration
+- `/dashboard.php` - Main dashboard
+- `/products.php` - Equipment listing
+- `/product_detail.php?id={id}` - Equipment details
+- `/book.php` - Booking submission
+- `/payment.php?id={booking_id}` - Payment management
+- `/receipt.php?id={booking_id}` - Booking receipt
+- `/notifications.php` - Notification center
 
-**Images Not Uploading:**
-- Check `assets/images/` folder permissions
-- Verify file size limits in `php.ini`
-- Check allowed file types
+## 🐛 Known Issues & Limitations
 
-**Location Not Working:**
-- Enable location permissions in browser
-- Use HTTPS for production
-- Check browser compatibility
+- File upload limited to 5MB
+- GPS location requires browser permission
+- Payment gateway integration is simulated (not connected to real payment processors)
+- Email notifications not implemented (uses in-app notifications only)
 
-## 📈 Future Enhancements
+## 🔄 Future Enhancements
 
-- [ ] Payment proof upload
-- [ ] Automatic payment reminders
-- [ ] Refund management
-- [ ] Payment analytics dashboard
-- [ ] Mobile app (React Native)
+- [ ] Real payment gateway integration (Razorpay, PayPal)
+- [ ] Email notification system
 - [ ] SMS notifications
-- [ ] Multi-language support
-- [ ] Advanced search filters
-- [ ] Equipment availability calendar
+- [ ] Advanced analytics dashboard
+- [ ] Equipment maintenance tracking
 - [ ] Insurance integration
+- [ ] Mobile app (iOS/Android)
+- [ ] Multi-language support
+- [ ] Equipment damage reporting
+- [ ] Rating and review system enhancement
+- [ ] Chat system between users
+- [ ] Calendar view for bookings
+- [ ] Equipment comparison feature
+- [ ] Wishlist functionality
 
-## 📝 License
+## 📄 License
 
-This project is for educational purposes.
+This project is developed for educational and commercial purposes. All rights reserved.
 
-## 👥 Support
+## 👥 Contributors
 
-For issues or questions:
-1. Check this README
-2. Review `PAYMENT_SYSTEM_GUIDE.md` for payment details
-3. Check database logs
-4. Review PHP error logs
+- Development Team: AgriLease Development Team
+- Project Type: Agricultural Equipment Rental Platform
+- Version: 2.0
 
-## 🎯 Default Credentials
+## 📞 Support
 
-After importing the database, you can use these sample accounts:
-- Username: `john_farmer` / Password: `password`
-- Username: `mary_agri` / Password: `password`
+For support, issues, or feature requests:
+- Create an issue in the repository
+- Contact: support@agrilease.com
+- Documentation: Available in project wiki
 
-## 📞 Contact
+## 🙏 Acknowledgments
 
-For support or contributions, please refer to the project documentation.
+- Icons: Custom SVG icons
+- Design inspiration: Modern web design principles
+- Database design: Normalized relational database structure
 
 ---
 
-**Version**: 2.0 with Payment System  
-**Last Updated**: November 2024  
-**Status**: Production Ready ✅
+**Last Updated**: November 2025  
+**Version**: 2.0  
+**Status**: Production Ready

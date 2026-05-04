@@ -26,12 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $image_path = $product['image_path'];
             if (!empty($_FILES['image']['name'])) {
-                if (!is_dir('assets/images')) mkdir('assets/images', 0777, true);
-                $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-                $fname = 'prod_' . time() . '_' . bin2hex(random_bytes(3)) . '.' . strtolower($ext);
-                $dest = 'assets/images/' . $fname;
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $dest)) {
-                    $image_path = $dest;
+                $res = handleFileUpload($_FILES['image']);
+                if ($res['success']) {
+                    $image_path = $res['path'];
+                } else {
+                    $error = $res['message'];
                 }
             }
             $stmt = $pdo->prepare("UPDATE products SET title=?, description=?, price=?, category=?, image_path=? WHERE id=? AND listed_by=?");
