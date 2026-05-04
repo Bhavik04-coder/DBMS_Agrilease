@@ -1,9 +1,5 @@
 <?php
-/**
- * Payment Gateway Integration
- * This file provides a basic structure for integrating payment gateways
- * Currently supports: Razorpay, Stripe, PayPal
- */
+
 
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
@@ -17,7 +13,6 @@ if (!$booking_id) {
     exit;
 }
 
-// Get booking details
 $stmt = $pdo->prepare("
     SELECT b.*, p.title as product_title
     FROM bookings b

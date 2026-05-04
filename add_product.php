@@ -17,9 +17,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lat = is_numeric($_POST['lat'] ?? null) ? (float)$_POST['lat'] : null;
         $lng = is_numeric($_POST['lng'] ?? null) ? (float)$_POST['lng'] : null;
 
+        // Validate required fields
+        if (empty($title)) {
+            $error = 'Product title is required.';
+        } elseif ($price <= 0) {
+            $error = 'Please enter a valid price greater than zero.';
+        } elseif (empty($location)) {
+            $error = 'Location is required.';
+        } elseif ($lat !== null && ($lat < -90 || $lat > 90)) {
+            $error = 'Invalid latitude value. Must be between -90 and 90.';
+        } elseif ($lng !== null && ($lng < -180 || $lng > 180)) {
+            $error = 'Invalid longitude value. Must be between -180 and 180.';
+        }
+
         // handle image upload
         $image_path = null;
-        if (!empty($_FILES['image']['name'])) {
+        if (!$error && !empty($_FILES['image']['name'])) {
             $res = handleFileUpload($_FILES['image']);
             if ($res['success']) {
                 $image_path = $res['path'];

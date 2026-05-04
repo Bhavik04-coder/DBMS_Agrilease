@@ -12,7 +12,9 @@ define('MAX_FILE_SIZE', 2 * 1024 * 1024);
 define('ALLOWED_FILE_TYPES', ['image/jpeg', 'image/png', 'image/gif']);
 
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 
 try {
@@ -20,7 +22,8 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
-    die("ERROR: Could not connect. " . $e->getMessage());
+    error_log("Database connection error: " . $e->getMessage());
+    die("ERROR: Could not connect to database. Please contact administrator.");
 }
 
 

@@ -16,28 +16,32 @@ function handleFileUpload($file) {
         return ['success' => false, 'message' => 'File upload error'];
     }
 
-
     if ($file['size'] > MAX_FILE_SIZE) {
         return ['success' => false, 'message' => 'File is too large'];
     }
 
-
-    $file_type = mime_content_type($file['tmp_name']);
+    // Validate file type by both MIME (using finfo) and extension
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $file_type = $finfo->file($file['tmp_name']);
     if (!in_array($file_type, ALLOWED_FILE_TYPES)) {
         return ['success' => false, 'message' => 'Invalid file type'];
     }
 
-
-    if (!is_dir(UPLOAD_DIR)) {
-        mkdir(UPLOAD_DIR, 0777, true);
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+    if (!in_array($extension, $allowed_extensions)) {
+        return ['success' => false, 'message' => 'Invalid file extension'];
     }
 
+    if (!is_dir(UPLOAD_DIR)) {
+        mkdir(UPLOAD_DIR, 0755, true);
+    }
 
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = uniqid() . '.' . $extension;
     $destination = UPLOAD_DIR . $filename;
 
     if (move_uploaded_file($file['tmp_name'], $destination)) {
+        chmod($destination, 0644);
         return ['success' => true, 'path' => $destination, 'filename' => $filename];
     }
 
@@ -73,15 +77,25 @@ function generateBookingId() {
 
 function sendNotification($userId, $title, $message, $type = 'general') {
     global $pdo;
-    $stmt = $pdo->prepare("INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)");
-    return $stmt->execute([$userId, $title, $message, $type]);
+    try {
+        $stmt = $pdo->prepare("INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)");
+        return $stmt->execute([$userId, $title, $message, $type]);
+    } catch (PDOException $e) {
+        error_log("Error sending notification: " . $e->getMessage());
+        return false;
+    }
 }
 
 function getUnreadNotificationCount($userId) {
     global $pdo;
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
-    $stmt->execute([$userId]);
-    return $stmt->fetchColumn();
+    try {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+        $stmt->execute([$userId]);
+        return $stmt->fetchColumn();
+    } catch (PDOException $e) {
+        error_log("Error getting notification count: " . $e->getMessage());
+        return 0;
+    }
 }
 
 function isLoggedIn() {

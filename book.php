@@ -27,7 +27,7 @@ $end = new DateTime($end_date);
 $today = new DateTime();
 
 if ($start < $today || $end < $start) {
-    die('Invalid date range.');
+    die('Invalid date range. Start date must be today or later, and end date must be on or after start date.');
 }
 
 
@@ -126,8 +126,9 @@ $pdo->prepare("
 ")->execute([$bid, $final_amount, $_SESSION['user_id']]);
 
 
-$u = $pdo->prepare("UPDATE products SET status='booked', availability='Rented' WHERE id = ?");
-$u->execute([$pid]);
+// Do NOT mark the product as booked yet — the owner must confirm first.
+// The product status will be updated to 'booked' in update_booking.php / manage_bookings.php
+// when the owner confirms the booking.
 
 
 $owner_msg = "New booking request for your equipment '{$p['title']}' from {$renter_name}. Duration: {$duration} days. Total: ₹" . number_format($total_price, 2);

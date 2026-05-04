@@ -1,14 +1,8 @@
--- =====================================================
--- AGRILEASE COMPLETE DATABASE WITH PAYMENT SYSTEM
--- Single file with everything you need
--- Includes: Users, Products, Bookings, Payments, Receipts, Reviews, Notifications
--- =====================================================
 
 DROP DATABASE IF EXISTS agrilease_v2;
 CREATE DATABASE agrilease_v2 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE agrilease_v2;
 
--- Disable foreign key checks temporarily
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Drop existing tables if any
@@ -20,13 +14,9 @@ DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS users;
 
--- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
--- =====================================================
--- USERS TABLE
--- Stores user account information
--- =====================================================
+
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(100) NOT NULL UNIQUE,
@@ -46,10 +36,7 @@ CREATE TABLE users (
   INDEX idx_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- PRODUCTS TABLE
--- Stores agricultural equipment listings
--- =====================================================
+
 CREATE TABLE products (
   id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
@@ -61,6 +48,9 @@ CREATE TABLE products (
   lat DECIMAL(10, 7) DEFAULT NULL,
   lng DECIMAL(10, 7) DEFAULT NULL,
   listed_by INT DEFAULT NULL,
+  -- 'status' (lowercase) is the canonical column used throughout the application.
+  -- 'availability' (mixed-case) mirrors status for display purposes.
+  -- Both are always updated together in application code.
   status ENUM('available', 'booked', 'maintenance') DEFAULT 'available',
   availability ENUM('Available', 'Rented', 'Maintenance') DEFAULT 'Available',
   views INT DEFAULT 0,
@@ -68,14 +58,12 @@ CREATE TABLE products (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (listed_by) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_status (status),
+  INDEX idx_availability (availability),
   INDEX idx_category (category),
   INDEX idx_listed_by (listed_by)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- BOOKINGS TABLE
--- Stores rental booking information with payment tracking
--- =====================================================
+
 CREATE TABLE bookings (
   id INT AUTO_INCREMENT PRIMARY KEY,
   product_id INT,
@@ -108,13 +96,11 @@ CREATE TABLE bookings (
   INDEX idx_status (status),
   INDEX idx_renter (renter_id),
   INDEX idx_owner (owner_id),
-  INDEX idx_dates (start_date, end_date)
+  INDEX idx_dates (start_date, end_date),
+  INDEX idx_payment_status (payment_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- PAYMENTS TABLE
--- Stores detailed payment transaction records
--- =====================================================
+
 CREATE TABLE payments (
   id INT AUTO_INCREMENT PRIMARY KEY,
   booking_id INT NOT NULL,
@@ -140,10 +126,7 @@ CREATE TABLE payments (
   INDEX idx_payment_type (payment_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- RECEIPTS TABLE
--- Stores receipt/invoice information for bookings
--- =====================================================
+
 CREATE TABLE receipts (
   id INT AUTO_INCREMENT PRIMARY KEY,
   booking_id INT NOT NULL,
@@ -170,10 +153,7 @@ CREATE TABLE receipts (
   INDEX idx_payment_status (payment_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- NOTIFICATIONS TABLE
--- Stores user notifications
--- =====================================================
+
 CREATE TABLE notifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,
@@ -189,10 +169,7 @@ CREATE TABLE notifications (
   INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- REVIEWS TABLE
--- Stores product and user reviews
--- =====================================================
+
 CREATE TABLE reviews (
   id INT AUTO_INCREMENT PRIMARY KEY,
   booking_id INT,
@@ -214,13 +191,10 @@ CREATE TABLE reviews (
   INDEX idx_reviewed (reviewed_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- TRIGGERS
--- Automatically calculate payments and generate receipts
--- =====================================================
+
 DELIMITER $$
 
--- Trigger to calculate deposit and final amounts when booking is created
+
 CREATE TRIGGER before_booking_insert
 BEFORE INSERT ON bookings
 FOR EACH ROW
@@ -229,7 +203,7 @@ BEGIN
   SET NEW.final_amount = NEW.total_price * 0.70;
 END$$
 
--- Trigger to update booking payment status when payment is completed
+
 CREATE TRIGGER after_payment_completed
 AFTER UPDATE ON payments
 FOR EACH ROW
@@ -259,7 +233,7 @@ BEGIN
   END IF;
 END$$
 
--- Trigger to generate receipt when booking is confirmed
+
 CREATE TRIGGER after_booking_confirmed
 AFTER UPDATE ON bookings
 FOR EACH ROW
@@ -292,12 +266,7 @@ END$$
 
 DELIMITER ;
 
--- =====================================================
--- VIEWS
--- Useful views for common queries
--- =====================================================
 
--- View for complete booking details with receipt and payments
 CREATE VIEW booking_details_with_receipt AS
 SELECT 
   b.id AS booking_id, b.status AS booking_status, b.start_date, b.end_date,
@@ -316,7 +285,7 @@ LEFT JOIN users renter ON b.renter_id = renter.id
 LEFT JOIN users owner ON b.owner_id = owner.id
 LEFT JOIN receipts r ON b.id = r.booking_id;
 
--- View for payment summary
+
 CREATE VIEW payment_summary AS
 SELECT 
   b.id AS booking_id, b.total_price, b.deposit_amount, b.final_amount,
@@ -335,7 +304,7 @@ LEFT JOIN products p ON b.product_id = p.id
 LEFT JOIN users renter ON b.renter_id = renter.id
 LEFT JOIN users owner ON b.owner_id = owner.id;
 
--- View for product statistics
+
 CREATE VIEW product_statistics AS
 SELECT 
   p.id, p.title, p.category, p.price, p.status,
@@ -348,11 +317,7 @@ LEFT JOIN bookings b ON p.id = b.product_id
 LEFT JOIN reviews rev ON p.id = rev.product_id
 GROUP BY p.id;
 
--- =====================================================
--- STORED PROCEDURES
--- =====================================================
 
--- Procedure to calculate booking duration
 DELIMITER $$
 
 CREATE PROCEDURE calculate_booking_duration(
@@ -390,32 +355,20 @@ END$$
 
 DELIMITER ;
 
--- =====================================================
--- SAMPLE DATA (Optional - Remove if not needed)
--- =====================================================
 
--- Insert sample users (password: password)
 INSERT INTO users (username, password, full_name, email, phone, address, lat, lng) VALUES
 ('john_farmer', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Farmer', 'john@example.com', '9876543210', 'Village Road, Punjab', 30.7333, 76.7794),
 ('mary_agri', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Mary Agriculture', 'mary@example.com', '9876543211', 'Farm Street, Haryana', 29.0588, 76.0856);
 
--- Insert sample products
+
 INSERT INTO products (title, description, category, price, location, lat, lng, listed_by, status) VALUES
 ('Tractor - John Deere 5050D', 'Powerful 50HP tractor suitable for all farming needs', 'Tractors', 1500.00, 'Punjab', 30.7333, 76.7794, 1, 'available'),
 ('Harvester - New Holland TC5.90', 'Efficient combine harvester for wheat and rice', 'Harvesters', 3000.00, 'Haryana', 29.0588, 76.0856, 2, 'available');
 
--- =====================================================
--- INDEXES FOR PERFORMANCE
--- =====================================================
+
 
 CREATE INDEX idx_booking_status_dates ON bookings(status, start_date, end_date);
 CREATE INDEX idx_product_status_category ON products(status, category);
 CREATE INDEX idx_receipt_payment ON receipts(payment_status, payment_date);
 
--- =====================================================
--- DATABASE READY
--- All tables, triggers, views, and procedures created
--- Payment system fully integrated
--- =====================================================
 
-SELECT 'Database setup completed successfully with payment system!' AS status;
