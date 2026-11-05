@@ -6,7 +6,7 @@ define('DB_PASS', '');
 define('DB_NAME', 'agrilease_v2');
 
 
-define('BASE_URL', 'http://localhost/agrilease');
+define('BASE_URL', 'http://localhost/DBMS_Agrilease');
 define('UPLOAD_DIR', 'assets/images/');
 define('MAX_FILE_SIZE', 2 * 1024 * 1024);
 define('ALLOWED_FILE_TYPES', ['image/jpeg', 'image/png', 'image/gif']);
