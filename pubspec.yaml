@@ -32,6 +32,10 @@ dependencies:
   # Storage
   shared_preferences: ^2.2.0
   get_storage: ^2.1.1
+  
+  # Database & Networking
+  http: ^1.1.0
+  dio: ^5.4.0
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,12 @@
+# Enable CORS for API endpoints
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Rewrite rules for REST API
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /DBMS_Agrilease/api/
+</IfModule>

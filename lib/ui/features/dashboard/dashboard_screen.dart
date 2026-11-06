@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/animations/scale_in_animation.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/products_provider.dart';
 import '../../../providers/bookings_provider.dart';
@@ -151,29 +152,41 @@ class DashboardScreen extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard(
-                      title: 'My Listings',
-                      value: myListings.toString(),
-                      icon: Icons.list_alt_rounded,
-                      color: const Color(0xFF2E7D32),
+                    child: ScaleInAnimation(
+                      duration: const Duration(milliseconds: 400),
+                      beginScale: 0.5,
+                      child: _buildStatCard(
+                        title: 'My Listings',
+                        value: myListings.toString(),
+                        icon: Icons.list_alt_rounded,
+                        color: const Color(0xFF2E7D32),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: _buildStatCard(
-                      title: 'Active Hires',
-                      value: activeBookings.toString(),
-                      icon: Icons.calendar_today_rounded,
-                      color: const Color(0xFF1976D2),
+                    child: ScaleInAnimation(
+                      duration: const Duration(milliseconds: 500),
+                      beginScale: 0.5,
+                      child: _buildStatCard(
+                        title: 'Active Hires',
+                        value: activeBookings.toString(),
+                        icon: Icons.calendar_today_rounded,
+                        color: const Color(0xFF1976D2),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: _buildStatCard(
-                      title: 'Requests',
-                      value: pendingRequests.toString(),
-                      icon: Icons.pending_actions_rounded,
-                      color: const Color(0xFFE65100),
+                    child: ScaleInAnimation(
+                      duration: const Duration(milliseconds: 600),
+                      beginScale: 0.5,
+                      child: _buildStatCard(
+                        title: 'Requests',
+                        value: pendingRequests.toString(),
+                        icon: Icons.pending_actions_rounded,
+                        color: const Color(0xFFE65100),
+                      ),
                     ),
                   ),
                 ],
